@@ -160,31 +160,82 @@
         }, { capture: true, passive: false });
 
         function initSignaling() {
-            document.getElementById('my-id-display').innerText = "ID: " + myId;
-            client = mqtt.connect('wss://broker.emqx.io:8084/mqtt');
-            client.on('connect', () => {
-                client.subscribe(`match/signal/${myId}`);
+    document.getElementById('my-id-display').innerText = "ID: " + myId;
+    
+    // 更換一個更穩定的公共 MQTT 伺服器與路徑
+    client = mqtt.connect('wss://broker.hivemq.com:8044/mqtt');
+
+    client.on('connect', () => {
+        console.log("MQTT Connected");
+        client.subscribe(`match/signal/${myId}`, (err) => {
+            if (!err) {
                 document.getElementById('conn-dot').className = "status-dot signaling";
-                document.getElementById('status-text').innerText = "系統就緒";
+                document.getElementById('status-text').innerText = "連線伺服器已就緒";
                 checkUrlParams();
-            });
-            client.on('message', (topic, msg) => {
-                const data = JSON.parse(msg.toString());
-                if (data.to === myId) {
-                    if (!p) initP2P(false, data.from);
-                    p.signal(data.signal);
-                }
-            });
-        }
+            }
+        });
+    });
 
-        function initP2P(initiator, receiverId) {
-            p = new SimplePeer({ initiator, trickle: true, config: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] } });
-            p.on('signal', data => client.publish(`match/signal/${receiverId}`, JSON.stringify({ from: myId, to: receiverId, signal: data })));
-            p.on('connect', () => { document.getElementById('conn-dot').className = "status-dot online"; });
-            p.on('data', data => processCommand(data.toString()));
-            p.on('close', () => { document.getElementById('conn-dot').className = "status-dot signaling"; p = null; });
-        }
+    client.on('message', (topic, msg) => {
+        try {
+            const data = JSON.parse(msg.toString());
+            // 收到信令後才初始化 P2P
+            if (!p) initP2P(false, data.from);
+            p.signal(data.signal);
+        } catch (e) { console.error("Signal error", e); }
+    });
 
+    client.on('error', (err) => {
+        console.error("MQTT Error: ", err);
+        document.getElementById('status-text').innerText = "伺服器連線失敗，請重新整理";
+    });
+}
+
+function initP2P(initiator, receiverId) {
+    // 增加更多 Google 的 STUN 伺服器來穿透防火牆
+    const peerConfig = {
+        initiator,
+        trickle: true,
+        config: {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' },
+                { urls: 'stun:stun2.l.google.com:19302' },
+                { urls: 'stun:stun.services.mozilla.com' }
+            ]
+        }
+    };
+
+    p = new SimplePeer(peerConfig);
+
+    p.on('signal', data => {
+        client.publish(`match/signal/${receiverId}`, JSON.stringify({ 
+            from: myId, 
+            to: receiverId, 
+            signal: data 
+        }));
+    });
+
+    p.on('connect', () => {
+        console.log("P2P Connected!");
+        document.getElementById('conn-dot').className = "status-dot online";
+        document.getElementById('status-text').innerText = "雙機連線成功";
+        // 成功後隱藏 QR Code
+        document.getElementById('qr-overlay').style.display = 'none';
+    });
+
+    p.on('data', data => processCommand(data.toString()));
+    
+    p.on('error', err => {
+        console.error("Peer error:", err);
+        document.getElementById('conn-dot').className = "status-dot signaling";
+    });
+
+    p.on('close', () => {
+        document.getElementById('conn-dot').className = "status-dot signaling";
+        p = null;
+    });
+}
         function checkUrlParams() {
             const joinId = new URLSearchParams(window.location.search).get('join');
             if (joinId) initP2P(true, joinId);
@@ -317,3 +368,4 @@
     </script>
 </body>
 </html>
+
