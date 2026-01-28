@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>專業撞球賽事系統 - 簡約計時版</title>
+    <title>專業撞球賽事系統 - 暫停字體強化版</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/simple-peer/9.11.1/simplepeer.min.js"></script>
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -21,34 +21,54 @@
         .side-a { background: linear-gradient(to right, #060b13, #0f172a); }
         .side-b { background: linear-gradient(to left, #060b13, #1e0b0b); }
         
+        /* 比分拉長 30% */
         .score-val { font-size: 50vh; font-weight: 900; line-height: 1; display: inline-block; transform: scaleY(1.3); transform-origin: center; }
         
-        /* 計時容器：預設透明無框 */
+        /* 計時容器 */
         .floating-timer {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             width: 380px; height: 220px;
-            background: transparent; border: 6px solid transparent; border-radius: 25px;
+            background: transparent; border: 6px solid transparent; border-radius: 30px;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            z-index: 50; transition: all 0.3s;
+            z-index: 50; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        /* 暫停模式：顯示紅色外框與深色背景 */
+        /* TIME OUT 模式：高度與寬度優化 */
         .floating-timer.timeout-mode { 
             border-color: var(--red); 
-            background: rgba(10, 15, 20, 0.98); 
-            width: 420px; 
-            box-shadow: 0 0 60px rgba(0,0,0,1);
+            background: rgba(15, 5, 5, 0.98); 
+            width: 440px; 
+            height: 265px; 
+            box-shadow: 0 0 80px rgba(227, 45, 45, 0.4);
         }
 
+        /* 數字拉長 50% */
         #timer-display { 
             font-size: 8rem; font-weight: bold; color: var(--green); 
             display: inline-block; transform: scaleY(1.5) scaleX(1.1);
             transform-origin: center;
         }
-        .timer-msg { font-size: 1rem; color: #ffffff; margin-top: -15px; margin-bottom: 10px; letter-spacing: 4px; font-weight: bold; }
+
+        /* 標籤字體優化 */
+        .timer-msg { 
+            font-size: 1.1rem; /* 預設 SHOT CLOCK 大小 */
+            color: #ffffff; 
+            margin-top: -15px; 
+            margin-bottom: 15px; 
+            letter-spacing: 5px; 
+            font-weight: bold; 
+            transition: font-size 0.3s;
+        }
+
+        /* 當進入 Time Out 時，字體再加大 50% */
+        .timeout-mode .timer-msg {
+            font-size: 1.65rem; 
+            margin-bottom: 20px;
+            letter-spacing: 8px;
+        }
 
         .indicators { display: flex; flex-direction: column; gap: 15px; position: absolute; top: 30px; z-index: 60; }
         .ind-left { left: 25px; } .ind-right { right: 25px; }
-        .ind-icon { width: 80px; height: 45px; border-radius: 6px; display: none; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: bold; border: 3px solid transparent; }
+        .ind-icon { width: 85px; height: 48px; border-radius: 8px; display: none; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: bold; border: 3px solid transparent; }
         .show-ext, .show-to { display: flex !important; }
 
         .action-bar { height: 14vh; display: flex; border-top: 1px solid #222; }
