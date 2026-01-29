@@ -261,11 +261,11 @@ function startTimer(sec) {
                 // 10秒提示
                 if (timeLeft === 10) {
                     playBeep(880, 0.1);
-                    speak("Ten seconds", 0.65);
+                    speak("Ten seconds", 0.75);
                 }
                 // 最後5秒讀秒
                 if (timeLeft <= 5 && timeLeft > 0) {
-                    speak(timeLeft, 0.55);
+                    speak(timeLeft, 0.65);
                 }
             }
             
@@ -287,5 +287,6 @@ function startTimer(sec) {
     </script>
    </body>
 </html>
+
 
 
