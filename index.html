@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>專業撞球賽事系統 - 雙模全能版</title>
+    <title>專業撞球賽事系統 - 旗艦同步版</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/simple-peer/9.11.1/simplepeer.min.js"></script>
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -13,10 +13,10 @@
         * { box-sizing: border-box; margin: 0; padding: 0; touch-action: manipulation; -webkit-user-select: none; }
         body { background: var(--bg); color: #fff; font-family: 'Arial Black', sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         
-        /* Header 調整 */
+        /* Header */
         .header { height: 45px; display: flex; justify-content: space-between; align-items: center; padding: 0 15px; background: rgba(0,0,0,0.8); z-index: 100; }
         .mode-switch { display: flex; background: #222; border-radius: 20px; padding: 2px; border: 1px solid #444; }
-        .mode-btn { padding: 4px 12px; border-radius: 18px; font-size: 0.75rem; cursor: pointer; border: none; color: #666; background: transparent; transition: 0.3s; }
+        .mode-btn { padding: 4px 12px; border-radius: 18px; font-size: 0.75rem; cursor: pointer; border: none; color: #666; background: transparent; }
         .mode-btn.active { background: var(--blue); color: #fff; }
 
         .main-stage { flex: 1; display: flex; position: relative; overflow: hidden; }
@@ -26,7 +26,7 @@
         .score-val { font-size: 45vh; font-weight: 900; line-height: 1; display: inline-block; transform: scaleY(1.3); text-shadow: 0 10px 30px rgba(0,0,0,0.8); transition: color 0.5s; }
         .at-hill { color: var(--yellow) !important; text-shadow: 0 0 50px rgba(255, 235, 59, 0.8); }
 
-        /* 計時器樣式 */
+        /* 計時器 */
         .floating-timer {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             width: 380px; height: 220px; background: transparent; border: 4px solid transparent; border-radius: 30px;
@@ -44,34 +44,29 @@
         .ind-icon { width: 85px; height: 48px; border-radius: 8px; display: none; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: bold; border: 3px solid transparent; background: rgba(0,0,0,0.5); }
         .show-ext, .show-to { display: flex !important; }
 
-        /* 下方按鈕區 */
         .action-bar { height: 14vh; display: flex; border-top: 1px solid #222; position: relative; }
         .btn-minus { position: absolute; bottom: 15px; width: 65px; height: 65px; border-radius: 50%; border: 1.5px solid #555; background: rgba(0,0,0,0.7); color: #fff; font-size: 2rem; z-index: 10; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .race-to-box { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #111; border: 1.5px solid rgba(255, 235, 59, 0.3); padding: 8px 30px; border-radius: 12px; z-index: 20; cursor: pointer; }
         #race-val { color: var(--yellow); font-size: 1.4rem; font-weight: 900; letter-spacing: 3px; }
 
         /* 全螢幕選單 */
-        .full-overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95); z-index: 9000; flex-direction: column; align-items: center; justify-content: center;
-        }
+        .full-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9000; flex-direction: column; align-items: center; justify-content: center; }
         .menu-title { font-size: 2rem; color: var(--yellow); margin-bottom: 40px; }
         .grid-menu { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; width: 80%; max-width: 600px; }
-        .menu-btn { background: #222; border: 2px solid #444; color: #fff; padding: 30px; border-radius: 15px; font-size: 2rem; font-weight: bold; cursor: pointer; }
-        .menu-btn:active { background: var(--blue); border-color: #fff; }
+        .menu-btn { background: #222; border: 2px solid #444; color: #fff; padding: 30px; border-radius: 15px; font-size: 2rem; font-weight: bold; }
 
-        /* 祝賀頁面 */
-        #winner-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, #1a1a1a 0%, #000 100%); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; }
-        .winner-text { height: 33vh; display: flex; align-items: flex-end; font-size: 4rem; color: #fff; text-align: center; }
-        .winner-cup { height: 67vh; display: flex; align-items: center; font-size: 15rem; filter: drop-shadow(0 0 30px gold); animation: trophyBounce 2s infinite; }
-        @keyframes trophyBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-30px); } }
-
-        #referee-panel { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 2000; padding: 10px; }
-        .ref-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; height: 85%; }
-        .ref-btn { background: #1a1a1a; border: 1px solid #333; color: #fff; border-radius: 15px; font-size: 1.4rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        /* 裁判端面板樣式 */
+        #referee-panel { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 2000; padding: 10px; overflow-y: auto; }
+        .ref-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .ref-btn { background: #1a1a1a; border: 1px solid #333; color: #fff; border-radius: 15px; font-size: 1.4rem; font-weight: bold; height: 70px; display: flex; align-items: center; justify-content: center; }
         
         #config-panel { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #111; z-index: 4000; padding: 25px; }
+        .config-item { margin-bottom: 15px; }
+        .config-item label { display: block; color: #888; margin-bottom: 5px; }
+        .config-item input { background: #222; border: 1px solid #444; color: #fff; width: 100%; padding: 12px; font-size: 1.2rem; border-radius: 8px; }
+
         #qr-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.98); z-index: 5000; flex-direction: column; align-items: center; justify-content: center; }
+        #winner-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, #1a1a1a 0%, #000 100%); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; }
     </style>
 </head>
 <body onclick="unlockAudio()">
@@ -79,11 +74,11 @@
     <div id="player-panel" style="height: 100%; display: flex; flex-direction: column;">
         <div class="header">
             <div class="mode-switch">
-                <button id="mode-timer" class="mode-btn active" onclick="setMatchMode('timer')">計時模式</button>
-                <button id="mode-normal" class="mode-btn" onclick="setMatchMode('normal')">常規模式</button>
+                <button id="mode-timer" class="mode-btn active" onclick="handleInput('setMode:timer')">計時模式</button>
+                <button id="mode-normal" class="mode-btn" onclick="handleInput('setMode:normal')">常規模式</button>
             </div>
             <div style="font-size: 11px; color: #555;">ID: <span id="display-my-id"></span></div>
-            <button style="background:#222; color:#888; border:1px solid #444; padding:4px 10px; border-radius:5px;" onclick="showQRCode()">裁判配對</button>
+            <button class="mode-btn" style="background:#222; border:1px solid #444" onclick="showQRCode()">連線碼</button>
         </div>
 
         <div class="main-stage">
@@ -94,14 +89,11 @@
                 </div>
                 <div class="score-val" id="scoreA">0</div>
             </div>
-            
             <div class="center-gap"></div>
-
             <div id="timer-box" class="floating-timer">
                 <div id="timer-msg" class="timer-msg">SHOT CLOCK</div>
                 <div id="timer-display">00</div>
             </div>
-
             <div class="player-side side-b">
                 <div class="indicators ind-right">
                     <div id="extB" class="ind-icon" style="border-color:#ffcc00; color:#ffcc00;">EXT</div>
@@ -126,15 +118,34 @@
         </div>
     </div>
 
+    <div id="referee-panel">
+        <h2 style="text-align:center; color:var(--green); margin-bottom:10px;">REFEREE REMOTE</h2>
+        <div class="ref-grid">
+            <button class="ref-btn" style="grid-column: span 2; background: #0e3a0e; border: 2px solid var(--green); height: 90px; font-size: 2.5rem;" onclick="handleInput('start_shot')">START</button>
+            <button class="ref-btn" onclick="handleInput('start_open')">OPEN</button>
+            <button class="ref-btn" onclick="handleInput('pause')" style="color:var(--yellow)">PAUSE</button>
+            <button class="ref-btn" onclick="handleInput('extA')">A 延長</button>
+            <button class="ref-btn" onclick="handleInput('extB')">B 延長</button>
+            <button class="ref-btn" onclick="handleInput('toA')" style="border-color:var(--purple)">T.O. A</button>
+            <button class="ref-btn" onclick="handleInput('toB')" style="border-color:var(--purple)">T.O. B</button>
+            <button class="ref-btn" onclick="handleInput('scoreA+')">A +1</button>
+            <button class="ref-btn" onclick="handleInput('scoreB+')">B +1</button>
+            <button class="ref-btn" onclick="handleInput('scoreA-')">A -1</button>
+            <button class="ref-btn" onclick="handleInput('scoreB-')">B -1</button>
+            <button class="ref-btn" onclick="openConfig()" style="background:#222">賽制設定</button>
+            <button class="ref-btn" style="grid-column: span 2; background:#333; height:50px; font-size:1rem;" onclick="if(confirm('確定重設全場比賽？')) handleInput('resetAll')">RESET MATCH</button>
+        </div>
+    </div>
+
     <div id="race-menu" class="full-overlay" onclick="toggleRaceMenu(false)">
-        <div class="menu-title">選擇搶局數 (Race To)</div>
+        <div class="menu-title">RACE TO</div>
         <div class="grid-menu" onclick="event.stopPropagation()">
             <button class="menu-btn" onclick="quickSetRace(3)">3</button>
             <button class="menu-btn" onclick="quickSetRace(5)">5</button>
             <button class="menu-btn" onclick="quickSetRace(7)">7</button>
             <button class="menu-btn" onclick="quickSetRace(9)">9</button>
             <button class="menu-btn" onclick="quickSetRace(11)">11</button>
-            <button class="menu-btn" style="background:#444" onclick="toggleRaceMenu(false)">取消</button>
+            <button class="menu-btn" style="background:#444" onclick="toggleRaceMenu(false)">X</button>
         </div>
     </div>
 
@@ -143,129 +154,64 @@
         <div class="winner-cup">🏆</div>
     </div>
 
-    <div id="referee-panel">...裁判內容省略...</div>
-    <div id="config-panel">...設定內容省略...</div>
-    <div id="qr-overlay" onclick="this.style.display='none'"><div id="qrcode" style="padding:10px; background:#fff;"></div></div>
+    <div id="config-panel">
+        <h2 style="color:var(--yellow); margin-bottom:20px;">賽制設定</h2>
+        <div class="config-item"><label>擊球秒數</label><input type="number" id="cfg-shot" value="30"></div>
+        <div class="config-item"><label>開球秒數</label><input type="number" id="cfg-open" value="60"></div>
+        <div class="config-item"><label>暫停分鐘</label><input type="number" id="cfg-to" value="5"></div>
+        <div class="config-item"><label>搶局數</label><input type="number" id="cfg-race" value="5"></div>
+        <button class="ref-btn" style="width:100%; background:var(--blue); margin-top:10px;" onclick="saveConfig()">儲存</button>
+        <button class="ref-btn" style="width:100%; border:none; background:transparent;" onclick="document.getElementById('config-panel').style.display='none'">取消</button>
+    </div>
+
+    <div id="qr-overlay" onclick="this.style.display='none'"><div id="qrcode" style="background:#fff; padding:10px;"></div></div>
 
     <script>
         let peer = null, mqttClient = null, audioCtx = null;
         const myId = 'P-' + Math.random().toString(36).substr(2, 4).toUpperCase();
         let settings = { shot: 30, open: 60, timeout: 5, race: 5 };
         let timeLeft = 0, timerId = null, scores = {A:0, B:0}, isPaused = false, isTimeoutMode = false, activeSide = null;
-        let matchMode = 'timer'; // 'timer' 或 'normal'
+        let matchMode = 'timer';
 
-        function setMatchMode(mode) {
-            matchMode = mode;
-            document.getElementById('mode-timer').classList.toggle('active', mode === 'timer');
-            document.getElementById('mode-normal').classList.toggle('active', mode === 'normal');
-            
-            const timerBox = document.getElementById('timer-box');
-            if (mode === 'normal') {
-                timerBox.classList.add('hidden');
-                if (timerId) clearInterval(timerId);
-            } else {
-                timerBox.classList.remove('hidden');
-                updateDisplay();
-            }
-        }
+        function handleInput(cmd) { unlockAudio(); if (peer && peer.connected) peer.send(cmd); processCommand(cmd); }
 
-        function toggleRaceMenu(show) {
-            document.getElementById('race-menu').style.display = show ? 'flex' : 'none';
-        }
-
-        function quickSetRace(val) {
-            settings.race = val;
-            applySettings();
-            if (peer && peer.connected) {
-                peer.send(`sync_cfg:${settings.shot},${settings.open},${settings.timeout},${settings.race}`);
-            }
-            toggleRaceMenu(false);
-        }
-
-        function applySettings() { 
-            document.getElementById('race-val').innerText = `RACE TO ${settings.race}`; 
-        }
-
-        function resetMatchState() {
-            scores = {A:0, B:0};
-            document.getElementById('scoreA').innerText = "0";
-            document.getElementById('scoreB').innerText = "0";
-            document.getElementById('scoreA').classList.remove('at-hill');
-            document.getElementById('scoreB').classList.remove('at-hill');
-            if (timerId) clearInterval(timerId);
-            timeLeft = 0; isPaused = false; isTimeoutMode = false;
-            document.getElementById('extA').classList.remove('show-ext');
-            document.getElementById('extB').classList.remove('show-ext');
-            document.getElementById('toA').classList.remove('show-to');
-            document.getElementById('toB').classList.remove('show-to');
-            document.getElementById('winner-overlay').style.display = 'none';
-            if (matchMode === 'timer') updateDisplay();
-        }
-
-        function updateScore(t, v) {
-            scores[t] = Math.max(0, scores[t] + v);
-            const scoreEl = document.getElementById('score' + t);
-            scoreEl.innerText = scores[t];
-            
-            if (scores[t] === settings.race - 1) scoreEl.classList.add('at-hill');
-            else scoreEl.classList.remove('at-hill');
-            
-            if (scores[t] >= settings.race) {
-                document.getElementById('winner-name').innerText = `PLAYER ${t} CHAMPION`;
-                document.getElementById('winner-overlay').style.display = 'flex';
-                speak(`Congratulations! Player ${t} is the champion`, 0.8);
-            }
-            
-            // 計時模式下才在得分後重設時鐘
-            if (matchMode === 'timer') {
-                document.getElementById('extA').classList.remove('show-ext');
-                document.getElementById('extB').classList.remove('show-ext');
-                if (timerId) clearInterval(timerId);
-                timeLeft = 0; updateDisplay();
-            }
-        }
-
-        // --- 其餘邏輯 (processCommand, startTimer, updateDisplay, Peer/MQTT) 與前版本相同 ---
         function processCommand(cmd) {
             if (cmd.startsWith('sync_cfg:')) {
-                const parts = cmd.split(':')[1].split(',').map(Number);
-                settings = { shot: parts[0], open: parts[1], timeout: parts[2], race: parts[3] };
+                const p = cmd.split(':')[1].split(',').map(Number);
+                settings = { shot: p[0], open: p[1], timeout: p[2], race: p[3] };
                 applySettings();
             }
+            else if (cmd.startsWith('setMode:')) { setMatchMode(cmd.split(':')[1]); }
             else if (cmd === 'start_shot' && matchMode === 'timer') { isTimeoutMode = false; startTimer(settings.shot); }
             else if (cmd === 'start_open' && matchMode === 'timer') { isTimeoutMode = false; startTimer(settings.open); }
             else if (cmd === 'pause') isPaused = !isPaused;
             else if (cmd.startsWith('score')) { updateScore(cmd.includes('scoreA') ? 'A' : 'B', cmd.includes('+') ? 1 : -1); }
             else if (cmd === 'extA' || cmd === 'extB') {
-                const side = cmd.slice(-1);
-                document.getElementById('ext'+side).classList.add('show-ext');
-                speak("Extension call", 0.85);
-                if(!isTimeoutMode && matchMode === 'timer') timeLeft += settings.shot;
-                updateDisplay();
+                const s = cmd.slice(-1); document.getElementById('ext'+s).classList.add('show-ext');
+                speak("Extension", 0.85); if(!isTimeoutMode && matchMode === 'timer') timeLeft += settings.shot; updateDisplay();
             }
             else if (cmd === 'toA') toggleTO('A');
             else if (cmd === 'toB') toggleTO('B');
             else if (cmd === 'resetAll') resetMatchState();
         }
 
-        function toggleTO(side) {
-            if (matchMode === 'normal') {
-                document.getElementById('to' + side).classList.toggle('show-to');
-                return;
-            }
-            if (isTimeoutMode && activeSide === side) { isTimeoutMode = false; startTimer(settings.shot); }
-            else { isTimeoutMode = true; activeSide = side; document.getElementById('to' + side).classList.add('show-to'); startTimer(settings.timeout * 60); }
+        function setMatchMode(mode) {
+            matchMode = mode;
+            document.getElementById('mode-timer').classList.toggle('active', mode === 'timer');
+            document.getElementById('mode-normal').classList.toggle('active', mode === 'normal');
+            const tb = document.getElementById('timer-box');
+            if (mode === 'normal') { tb.classList.add('hidden'); if(timerId) clearInterval(timerId); }
+            else { tb.classList.remove('hidden'); updateDisplay(); }
         }
 
         function startTimer(sec) {
             if (matchMode !== 'timer') return;
             if (timerId) clearInterval(timerId);
-            timeLeft = sec; isPaused = false;
-            updateDisplay();
+            timeLeft = sec; isPaused = false; updateDisplay();
             timerId = setInterval(() => {
                 if (!isPaused && timeLeft > 0) {
                     timeLeft--;
-                    if (!isTimeoutMode && timeLeft === 10) { playBeep(880, 0.1); speak("Ten seconds", 0.75); }
+                    if (!isTimeoutMode && timeLeft === 10) speak("Ten seconds", 0.75);
                     if (!isTimeoutMode && timeLeft <= 5 && timeLeft > 0) speak(timeLeft, 0.65);
                     updateDisplay();
                     if (timeLeft === 0) { playBeep(440, 0.8); if(isTimeoutMode) { isTimeoutMode = false; startTimer(settings.shot); } }
@@ -278,23 +224,50 @@
             const d = document.getElementById('timer-display'), box = document.getElementById('timer-box'), msg = document.getElementById('timer-msg');
             if (isTimeoutMode) {
                 box.classList.add('timeout-mode'); msg.innerText = "TIME OUT";
-                let mins = Math.floor(timeLeft / 60), secs = timeLeft % 60;
-                d.innerText = `${mins}:${secs < 10 ? '0' + secs : secs}`;
-                d.style.color = "var(--red)";
+                let m = Math.floor(timeLeft/60), s = timeLeft%60; d.innerText = `${m}:${s<10?'0'+s:s}`; d.style.color = "var(--red)";
             } else {
                 box.classList.remove('timeout-mode'); msg.innerText = "SHOT CLOCK";
-                d.innerText = timeLeft < 10 ? "0" + timeLeft : timeLeft;
-                d.style.color = (timeLeft <= 5 && timeLeft > 0) ? "var(--red)" : "var(--green)";
+                d.innerText = timeLeft<10?'0'+timeLeft:timeLeft; d.style.color = (timeLeft<=5&&timeLeft>0)?"var(--red)":"var(--green)";
             }
         }
 
-        function speak(text, customRate = 0.55) { if (!window.speechSynthesis) return; window.speechSynthesis.cancel(); const m = new SpeechSynthesisUtterance(text.toString()); m.lang = 'en-US'; m.rate = customRate; window.speechSynthesis.speak(m); }
-        function playBeep(f, d) { if (!audioCtx) return; const o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.frequency.value = f; o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + d); }
-        function unlockAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
-        function showQRCode() { const q = document.getElementById('qrcode'); q.innerHTML = ""; const refUrl = window.location.origin + window.location.pathname + "?mode=ref&join=" + myId; new QRCode(q, { text: refUrl, width: 220, height: 220 }); document.getElementById('qr-overlay').style.display = 'flex'; }
+        function updateScore(t, v) {
+            scores[t] = Math.max(0, scores[t] + v);
+            const el = document.getElementById('score'+t); el.innerText = scores[t];
+            if (scores[t] === settings.race - 1) el.classList.add('at-hill'); else el.classList.remove('at-hill');
+            if (scores[t] >= settings.race) {
+                document.getElementById('winner-name').innerText = `PLAYER ${t} CHAMPION`;
+                document.getElementById('winner-overlay').style.display='flex';
+                speak(`Congratulations Player ${t}`, 0.8);
+            }
+            if (matchMode === 'timer' && v > 0) { 
+                document.getElementById('extA').classList.remove('show-ext');
+                document.getElementById('extB').classList.remove('show-ext');
+                if (timerId) clearInterval(timerId); timeLeft = 0; updateDisplay(); 
+            }
+        }
+
+        function resetMatchState() {
+            scores = {A:0, B:0}; document.getElementById('scoreA').innerText = "0"; document.getElementById('scoreB').innerText = "0";
+            document.querySelectorAll('.at-hill, .show-ext, .show-to').forEach(el => el.classList.remove('at-hill', 'show-ext', 'show-to'));
+            if (timerId) clearInterval(timerId); timeLeft = 0; isPaused = false; isTimeoutMode = false;
+            document.getElementById('winner-overlay').style.display = 'none'; updateDisplay();
+        }
+
+        function quickSetRace(val) { handleInput('sync_cfg:' + settings.shot + ',' + settings.open + ',' + settings.timeout + ',' + val); toggleRaceMenu(false); }
+        function applySettings() { document.getElementById('race-val').innerText = `RACE TO ${settings.race}`; }
+        function toggleRaceMenu(s) { document.getElementById('race-menu').style.display = s?'flex':'none'; }
+        function openConfig() { document.getElementById('config-panel').style.display = 'block'; }
+        function saveConfig() { 
+            const s = document.getElementById('cfg-shot').value, o = document.getElementById('cfg-open').value, t = document.getElementById('cfg-to').value, r = document.getElementById('cfg-race').value;
+            handleInput(`sync_cfg:${s},${o},${t},${r}`); document.getElementById('config-panel').style.display='none';
+        }
+        function showQRCode() { const q = document.getElementById('qrcode'); q.innerHTML = ""; new QRCode(q, { text: window.location.origin + window.location.pathname + "?mode=ref&join=" + myId, width: 220, height: 220 }); document.getElementById('qr-overlay').style.display = 'flex'; }
+        function speak(t, r) { if(!window.speechSynthesis) return; window.speechSynthesis.cancel(); const m = new SpeechSynthesisUtterance(t); m.lang='en-US'; m.rate=r; window.speechSynthesis.speak(m); }
+        function playBeep(f, d) { if(!audioCtx) return; const o=audioCtx.createOscillator(), g=audioCtx.createGain(); o.frequency.value=f; o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime+d); }
+        function unlockAudio() { if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
         function initPeer(initiator, targetId) { peer = new SimplePeer({ initiator, trickle: true, config: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] } }); peer.on('signal', data => mqttClient.publish(`pool/signal/${targetId}`, JSON.stringify({ from: myId, signal: data }))); peer.on('connect', () => { document.getElementById('qr-overlay').style.display='none'; peer.send(`sync_cfg:${settings.shot},${settings.open},${settings.timeout},${settings.race}`); }); peer.on('data', data => processCommand(data.toString())); }
         function initSignaling() { mqttClient = mqtt.connect('wss://broker.emqx.io:8084/mqtt'); mqttClient.on('connect', () => { document.getElementById('display-my-id').innerText = myId; mqttClient.subscribe(`pool/signal/${myId}`); const urlParams = new URLSearchParams(window.location.search); if (urlParams.get('mode') === 'ref') { document.getElementById('player-panel').style.display = 'none'; document.getElementById('referee-panel').style.display = 'block'; } if (urlParams.get('join')) initPeer(true, urlParams.get('join')); }); mqttClient.on('message', (topic, msg) => { const data = JSON.parse(msg.toString()); if (!peer) initPeer(false, data.from); peer.signal(data.signal); }); }
-        function handleInput(cmd) { unlockAudio(); if (peer && peer.connected) peer.send(cmd); processCommand(cmd); }
         window.onload = initSignaling;
     </script>
 </body>
