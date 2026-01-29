@@ -37,11 +37,15 @@
             box-shadow: 0 0 80px rgba(227, 45, 45, 0.4);
         }
 
+        /* 優化立體陰影：加入深灰色立體投影層 */
         #timer-display { 
             font-size: 8rem; font-weight: bold; color: var(--green); 
             display: inline-block; transform: scaleY(1.5) scaleX(1.1);
             transform-origin: center;
-            text-shadow: 4px 4px 0px rgba(0,0,0,0.8), 8px 8px 15px rgba(0,0,0,0.5);
+            text-shadow: 
+                2px 2px 0px #333,               /* 第一層深灰實體影 */
+                4px 4px 0px #1a1a1a,             /* 第二層更深實體影 */
+                6px 6px 12px rgba(0,0,0,0.9);    /* 第三層柔和深色擴散 */
         }
         .timeout-mode #timer-display { color: var(--red); }
 
@@ -57,25 +61,25 @@
         .btn-plus { flex: 1; border: none; font-size: 5rem; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .btn-minus { position: absolute; bottom: 15px; width: 65px; height: 65px; border-radius: 50%; border: 1.5px solid #555; background: rgba(0,0,0,0.7); color: #fff; font-size: 2rem; z-index: 10; }
 
-        /* Race To 懸浮框：深底淺黃字 */
+        /* Race To 懸浮框：深色背景與淺黃色字體 */
         .race-to-box {
             position: absolute;
             top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.75);
-            border: 1px solid rgba(255, 235, 59, 0.4);
-            backdrop-filter: blur(10px);
+            background: #111; /* 深色背景 */
+            border: 1.5px solid rgba(255, 235, 59, 0.5); /* 淺黃色邊框 */
             padding: 10px 35px;
             border-radius: 12px;
             z-index: 20;
-            box-shadow: 0 4px 25px rgba(0,0,0,0.8);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.9);
             pointer-events: none;
         }
         #race-val {
-            color: var(--yellow);
+            color: var(--yellow); /* 淺黃色字體 */
             font-size: 1.6rem;
             font-weight: 900;
             letter-spacing: 4px;
             white-space: nowrap;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
         }
         
         #referee-panel { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 2000; padding: 15px; grid-template-rows: auto 1fr; }
@@ -147,6 +151,7 @@
     <div id="qr-overlay" onclick="this.style.display='none'"><div id="qrcode"></div><p style="margin-top:25px;">裁判掃描連線</p></div>
 
     <script>
+        // JS 邏輯保持不變
         let peer = null, mqttClient = null, audioCtx = null;
         const myId = 'P-' + Math.random().toString(36).substr(2, 4).toUpperCase();
         let timeLeft = 0, timerId = null, scores = {A:0, B:0}, isPaused = false, isTimeoutMode = false;
