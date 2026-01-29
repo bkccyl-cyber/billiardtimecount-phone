@@ -18,43 +18,31 @@
 
         .main-stage { flex: 1; display: flex; position: relative; overflow: hidden; }
         
-        /* 側邊版面：寬度固定在 40% */
+        /* 側邊版面：寬度 40% */
         .player-side { 
-            width: 40%; 
-            height: 100%;
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            position: relative; 
-            transition: all 0.5s;
+            width: 40%; height: 100%;
+            display: flex; align-items: center; justify-content: center; 
+            position: relative; transition: all 0.5s;
         }
         .side-a { background: linear-gradient(to right, #060b13, #0f172a); }
         .side-b { background: linear-gradient(to left, #060b13, #1e0b0b); margin-left: auto; }
-        
-        /* 讓中間 20% 留空給計時器 */
-        .center-gap { width: 20%; height: 100%; }
+        .center-gap { width: 20%; }
 
-        .active-side { filter: brightness(1.3); }
+        .active-side { filter: brightness(1.3); box-shadow: inset 0 0 50px rgba(255,255,255,0.05); }
         
-        /* 分數位置優化 */
         .score-val { 
-            font-size: 45vh; 
-            font-weight: 900; 
-            line-height: 1; 
-            display: inline-block; 
-            transform: scaleY(1.3); 
-            transform-origin: center;
+            font-size: 45vh; font-weight: 900; line-height: 1; 
+            display: inline-block; transform: scaleY(1.3); 
             text-shadow: 0 10px 30px rgba(0,0,0,0.8);
         }
         
-        /* 中央懸浮計時器 */
         .floating-timer {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             width: 380px; height: 220px;
-            background: rgba(10, 14, 20, 0.85); border: 4px solid #333; border-radius: 30px;
+            background: rgba(10, 14, 20, 0.9); border: 4px solid #333; border-radius: 30px;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             z-index: 50; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            backdrop-filter: blur(8px);
+            backdrop-filter: blur(10px);
         }
         .floating-timer.timeout-mode { border-color: var(--red); background: rgba(15, 5, 5, 0.98); width: 440px; height: 265px; box-shadow: 0 0 80px rgba(227, 45, 45, 0.4); }
 
@@ -66,13 +54,11 @@
         .timeout-mode #timer-display { color: var(--red); }
         .timer-msg { font-size: 1.1rem; color: #ffffff; margin-top: -15px; margin-bottom: 15px; letter-spacing: 5px; font-weight: bold; }
 
-        /* 標記燈號 */
         .indicators { display: flex; flex-direction: column; gap: 15px; position: absolute; top: 30px; z-index: 60; }
         .ind-left { left: 25px; } .ind-right { right: 25px; }
-        .ind-icon { width: 85px; height: 48px; border-radius: 8px; display: none; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: bold; border: 3px solid transparent; background: rgba(0,0,0,0.3); }
+        .ind-icon { width: 85px; height: 48px; border-radius: 8px; display: none; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: bold; border: 3px solid transparent; background: rgba(0,0,0,0.5); }
         .show-ext, .show-to { display: flex !important; }
 
-        /* 操作欄 */
         .action-bar { height: 14vh; display: flex; border-top: 1px solid #222; position: relative; }
         .btn-plus { flex: 1; border: none; font-size: 5rem; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .btn-minus { position: absolute; bottom: 15px; width: 65px; height: 65px; border-radius: 50%; border: 1.5px solid #555; background: rgba(0,0,0,0.7); color: #fff; font-size: 2rem; z-index: 10; cursor: pointer; }
@@ -82,7 +68,7 @@
             background: #111; border: 1.5px solid rgba(255, 235, 59, 0.5);
             padding: 8px 30px; border-radius: 12px; z-index: 20; cursor: pointer;
         }
-        #race-val { color: var(--yellow); font-size: 1.4rem; font-weight: 900; letter-spacing: 3px; white-space: nowrap; }
+        #race-val { color: var(--yellow); font-size: 1.4rem; font-weight: 900; letter-spacing: 3px; }
         
         #referee-panel { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 2000; padding: 15px; }
         .ref-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; height: 90%; margin-top: 10px; }
@@ -106,14 +92,11 @@
                 </div>
                 <div class="score-val" id="scoreA">0</div>
             </div>
-
             <div class="center-gap"></div>
-
             <div id="timer-box" class="floating-timer">
                 <div id="timer-msg" class="timer-msg">SHOT CLOCK</div>
                 <div id="timer-display">00</div>
             </div>
-
             <div class="player-side side-b" id="panelB">
                 <div class="indicators ind-right">
                     <div id="extB" class="ind-icon" style="border-color:#ffcc00; color:#ffcc00;">EXT</div>
@@ -147,8 +130,8 @@
             <button class="ref-btn" onclick="handleInput('pause')" style="color:var(--yellow)">PAUSE</button>
             <button class="ref-btn" onclick="handleInput('extA')">A 延長</button>
             <button class="ref-btn" onclick="handleInput('extB')">B 延長</button>
-            <button class="ref-btn" onclick="handleInput('toA')" style="border-color:var(--purple)">T.O. A</button>
-            <button class="ref-btn" onclick="handleInput('toB')" style="border-color:var(--purple)">T.O. B</button>
+            <button class="ref-btn" onclick="handleInput('toA')" style="border-color:var(--purple)">T.O. A (300s)</button>
+            <button class="ref-btn" onclick="handleInput('toB')" style="border-color:var(--purple)">T.O. B (300s)</button>
             <button class="ref-btn" style="grid-column: span 2; font-size: 1rem; color: #555; border:none;" onclick="if(confirm('重設？')) handleInput('resetAll')">RESET MATCH</button>
         </div>
     </div>
@@ -210,14 +193,12 @@
             else if (cmd === 'start_60') { highlightSide(null); startTimer(60); }
             else if (cmd === 'pause') isPaused = !isPaused;
             else if (cmd.startsWith('score')) {
-                const side = cmd.includes('scoreA') ? 'A' : 'B';
-                const val = cmd.includes('+') ? 1 : -1;
-                updateScore(side, val);
+                updateScore(cmd.includes('scoreA') ? 'A' : 'B', cmd.includes('+') ? 1 : -1);
             }
-            else if (cmd === 'extA') { toggleBadge('extA'); if(!isTimeoutMode) { timeLeft += 30; updateDisplay(); } }
-            else if (cmd === 'extB') { toggleBadge('extB'); if(!isTimeoutMode) { timeLeft += 30; updateDisplay(); } }
-            else if (cmd === 'toA') toggleTO('A');
-            else if (cmd === 'toB') toggleTO('B');
+            else if (cmd === 'extA') { document.getElementById('extA').classList.add('show-ext'); if(!isTimeoutMode) { timeLeft += 30; updateDisplay(); } }
+            else if (cmd === 'extB') { document.getElementById('extB').classList.add('show-ext'); if(!isTimeoutMode) { timeLeft += 30; updateDisplay(); } }
+            else if (cmd === 'toA') { triggerTO('A'); }
+            else if (cmd === 'toB') { triggerTO('B'); }
             else if (cmd === 'resetAll') location.reload();
         }
 
@@ -237,16 +218,18 @@
                     if (!isTimeoutMode && timeLeft === 10) playBeep(880, 0.1);
                     if (!isTimeoutMode && timeLeft <= 5 && timeLeft > 0) speak(timeLeft);
                     updateDisplay();
-                    if (timeLeft === 0) playBeep(440, 0.8);
+                    if (timeLeft === 0) {
+                        playBeep(440, 0.8);
+                        if(isTimeoutMode) { isTimeoutMode = false; updateDisplay(); }
+                    }
                 }
             }, 1000);
         }
 
-        function toggleTO(t) {
-            const el = document.getElementById('to' + t);
-            const isShowing = el.classList.toggle('show-to');
-            if (isShowing) { highlightSide(t); startTimer(300); } 
-            else { startTimer(30); }
+        function triggerTO(side) {
+            document.getElementById('to' + side).classList.add('show-to'); // 永久亮燈
+            highlightSide(side);
+            startTimer(300); // 暫停 5 分鐘
         }
 
         function updateDisplay() {
@@ -268,21 +251,20 @@
         function updateScore(t, v) { 
             scores[t] = Math.max(0, scores[t] + v); 
             document.getElementById('score' + t).innerText = scores[t]; 
-            
-            // 規則調整：任一方得分，兩方 EXT 都要消除
+            // 消除雙方延長
             document.getElementById('extA').classList.remove('show-ext');
             document.getElementById('extB').classList.remove('show-ext');
-            
-            // T.O. 保留，不在此處清除
+            // T.O. 燈號保留，不清除
             highlightSide(null);
-            if (timerId) clearInterval(timerId); // 得分時暫停計時
+            if (timerId) clearInterval(timerId);
             timeLeft = 0; updateDisplay();
         }
 
-        function toggleBadge(id) { document.getElementById(id).classList.toggle(id.startsWith('ext') ? 'show-ext' : 'show-to'); }
         function unlockAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
         function playBeep(f, d) { if (!audioCtx) return; const o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.frequency.value = f; o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + d); }
-        function speak(n) { if (!window.speechSynthesis) return; window.speechSynthesis.cancel(); const m = new SpeechSynthesisUtterance(n.toString()); m.lang = 'en-US'; m.rate = 1.8; window.speechSynthesis.speak(m); }
+        
+        // 語音播放速度調整為 0.9
+        function speak(n) { if (!window.speechSynthesis) return; window.speechSynthesis.cancel(); const m = new SpeechSynthesisUtterance(n.toString()); m.lang = 'en-US'; m.rate = 0.9; window.speechSynthesis.speak(m); }
         
         function showQRCode() {
             const q = document.getElementById('qrcode'); q.innerHTML = "";
