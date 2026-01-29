@@ -14,77 +14,79 @@
         body { background: var(--bg); color: #fff; font-family: 'Arial Black', sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         
         .header { height: 40px; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; background: rgba(0,0,0,0.5); z-index: 100; }
-        .setting-btn { background: #222; border: 1px solid #444; color: #888; padding: 4px 12px; border-radius: 5px; font-size: 0.75rem; }
+        .setting-btn { background: #222; border: 1px solid #444; color: #888; padding: 4px 12px; border-radius: 5px; font-size: 0.75rem; cursor: pointer; }
 
         .main-stage { flex: 1; display: flex; position: relative; overflow: hidden; }
-        .player-side { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; }
+        
+        /* 側邊版面：寬度固定在 40% */
+        .player-side { 
+            width: 40%; 
+            height: 100%;
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            position: relative; 
+            transition: all 0.5s;
+        }
         .side-a { background: linear-gradient(to right, #060b13, #0f172a); }
-        .side-b { background: linear-gradient(to left, #060b13, #1e0b0b); }
+        .side-b { background: linear-gradient(to left, #060b13, #1e0b0b); margin-left: auto; }
         
-        .score-val { font-size: 50vh; font-weight: 900; line-height: 1; display: inline-block; transform: scaleY(1.3); transform-origin: center; }
+        /* 讓中間 20% 留空給計時器 */
+        .center-gap { width: 20%; height: 100%; }
+
+        .active-side { filter: brightness(1.3); }
         
+        /* 分數位置優化 */
+        .score-val { 
+            font-size: 45vh; 
+            font-weight: 900; 
+            line-height: 1; 
+            display: inline-block; 
+            transform: scaleY(1.3); 
+            transform-origin: center;
+            text-shadow: 0 10px 30px rgba(0,0,0,0.8);
+        }
+        
+        /* 中央懸浮計時器 */
         .floating-timer {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             width: 380px; height: 220px;
-            background: transparent; border: 6px solid transparent; border-radius: 30px;
+            background: rgba(10, 14, 20, 0.85); border: 4px solid #333; border-radius: 30px;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             z-index: 50; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(8px);
         }
-        .floating-timer.timeout-mode { 
-            border-color: var(--red); 
-            background: rgba(15, 5, 5, 0.98); 
-            width: 440px; height: 265px; 
-            box-shadow: 0 0 80px rgba(227, 45, 45, 0.4);
-        }
+        .floating-timer.timeout-mode { border-color: var(--red); background: rgba(15, 5, 5, 0.98); width: 440px; height: 265px; box-shadow: 0 0 80px rgba(227, 45, 45, 0.4); }
 
-        /* 優化立體陰影：加入深灰色立體投影層 */
         #timer-display { 
             font-size: 8rem; font-weight: bold; color: var(--green); 
             display: inline-block; transform: scaleY(1.5) scaleX(1.1);
-            transform-origin: center;
-            text-shadow: 
-                2px 2px 0px #333,               /* 第一層深灰實體影 */
-                4px 4px 0px #1a1a1a,             /* 第二層更深實體影 */
-                6px 6px 12px rgba(0,0,0,0.9);    /* 第三層柔和深色擴散 */
+            text-shadow: 3px 3px 0px #1a1a1a, 6px 6px 15px rgba(0,0,0,0.9);
         }
         .timeout-mode #timer-display { color: var(--red); }
+        .timer-msg { font-size: 1.1rem; color: #ffffff; margin-top: -15px; margin-bottom: 15px; letter-spacing: 5px; font-weight: bold; }
 
-        .timer-msg { font-size: 1.1rem; color: #ffffff; margin-top: -15px; margin-bottom: 15px; letter-spacing: 5px; font-weight: bold; transition: font-size 0.3s; }
-        .timeout-mode .timer-msg { font-size: 1.65rem; margin-bottom: 20px; letter-spacing: 8px; }
-
+        /* 標記燈號 */
         .indicators { display: flex; flex-direction: column; gap: 15px; position: absolute; top: 30px; z-index: 60; }
         .ind-left { left: 25px; } .ind-right { right: 25px; }
-        .ind-icon { width: 85px; height: 48px; border-radius: 8px; display: none; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: bold; border: 3px solid transparent; }
+        .ind-icon { width: 85px; height: 48px; border-radius: 8px; display: none; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: bold; border: 3px solid transparent; background: rgba(0,0,0,0.3); }
         .show-ext, .show-to { display: flex !important; }
 
+        /* 操作欄 */
         .action-bar { height: 14vh; display: flex; border-top: 1px solid #222; position: relative; }
         .btn-plus { flex: 1; border: none; font-size: 5rem; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .btn-minus { position: absolute; bottom: 15px; width: 65px; height: 65px; border-radius: 50%; border: 1.5px solid #555; background: rgba(0,0,0,0.7); color: #fff; font-size: 2rem; z-index: 10; }
+        .btn-minus { position: absolute; bottom: 15px; width: 65px; height: 65px; border-radius: 50%; border: 1.5px solid #555; background: rgba(0,0,0,0.7); color: #fff; font-size: 2rem; z-index: 10; cursor: pointer; }
 
-        /* Race To 懸浮框：深色背景與淺黃色字體 */
         .race-to-box {
-            position: absolute;
-            top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: #111; /* 深色背景 */
-            border: 1.5px solid rgba(255, 235, 59, 0.5); /* 淺黃色邊框 */
-            padding: 10px 35px;
-            border-radius: 12px;
-            z-index: 20;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.9);
-            pointer-events: none;
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: #111; border: 1.5px solid rgba(255, 235, 59, 0.5);
+            padding: 8px 30px; border-radius: 12px; z-index: 20; cursor: pointer;
         }
-        #race-val {
-            color: var(--yellow); /* 淺黃色字體 */
-            font-size: 1.6rem;
-            font-weight: 900;
-            letter-spacing: 4px;
-            white-space: nowrap;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-        }
+        #race-val { color: var(--yellow); font-size: 1.4rem; font-weight: 900; letter-spacing: 3px; white-space: nowrap; }
         
-        #referee-panel { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 2000; padding: 15px; grid-template-rows: auto 1fr; }
-        .ref-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; height: 92%; }
-        .ref-btn { background: #1a1a1a; border: 1px solid #333; color: #fff; border-radius: 18px; font-size: 1.6rem; font-weight: bold; display: flex; align-items: center; justify-content: center; }
+        #referee-panel { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 2000; padding: 15px; }
+        .ref-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; height: 90%; margin-top: 10px; }
+        .ref-btn { background: #1a1a1a; border: 1px solid #333; color: #fff; border-radius: 18px; font-size: 1.6rem; font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         #qr-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.98); z-index: 3000; flex-direction: column; align-items: center; justify-content: center; }
     </style>
 </head>
@@ -97,7 +99,7 @@
         </div>
 
         <div class="main-stage">
-            <div class="player-side side-a">
+            <div class="player-side side-a" id="panelA">
                 <div class="indicators ind-left">
                     <div id="extA" class="ind-icon" style="border-color:#ffcc00; color:#ffcc00;">EXT</div>
                     <div id="toA" class="ind-icon" style="border-color:var(--purple); color:var(--purple);">T.O.</div>
@@ -105,12 +107,14 @@
                 <div class="score-val" id="scoreA">0</div>
             </div>
 
+            <div class="center-gap"></div>
+
             <div id="timer-box" class="floating-timer">
                 <div id="timer-msg" class="timer-msg">SHOT CLOCK</div>
                 <div id="timer-display">00</div>
             </div>
 
-            <div class="player-side side-b">
+            <div class="player-side side-b" id="panelB">
                 <div class="indicators ind-right">
                     <div id="extB" class="ind-icon" style="border-color:#ffcc00; color:#ffcc00;">EXT</div>
                     <div id="toB" class="ind-icon" style="border-color:var(--purple); color:var(--purple);">T.O.</div>
@@ -120,7 +124,7 @@
         </div>
 
         <div class="action-bar">
-            <div class="race-to-box">
+            <div class="race-to-box" onclick="cycleRace()">
                 <div id="race-val">RACE TO 5</div>
             </div>
             <div style="flex:1; position:relative; display:flex;">
@@ -137,7 +141,8 @@
     <div id="referee-panel">
         <div style="text-align: center; padding: 15px; font-size: 1.2rem; color: var(--green);">REFEREE CONTROL</div>
         <div class="ref-grid">
-            <button class="ref-btn" style="grid-column: span 2; background: #0e3a0e; border: 2px solid var(--green); font-size: 2.2rem;" onclick="handleInput('start_30')">START (30s)</button>
+            <button class="ref-btn" style="background: #0e3a0e; border: 2px solid var(--green);" onclick="handleInput('start_30_A')">A START</button>
+            <button class="ref-btn" style="background: #3a0e0e; border: 2px solid var(--red);" onclick="handleInput('start_30_B')">B START</button>
             <button class="ref-btn" onclick="handleInput('start_60')">OPEN (60s)</button>
             <button class="ref-btn" onclick="handleInput('pause')" style="color:var(--yellow)">PAUSE</button>
             <button class="ref-btn" onclick="handleInput('extA')">A 延長</button>
@@ -151,10 +156,17 @@
     <div id="qr-overlay" onclick="this.style.display='none'"><div id="qrcode"></div><p style="margin-top:25px;">裁判掃描連線</p></div>
 
     <script>
-        // JS 邏輯保持不變
         let peer = null, mqttClient = null, audioCtx = null;
         const myId = 'P-' + Math.random().toString(36).substr(2, 4).toUpperCase();
         let timeLeft = 0, timerId = null, scores = {A:0, B:0}, isPaused = false, isTimeoutMode = false;
+        let raceTo = 5;
+
+        function cycleRace() {
+            const options = [3, 5, 7, 9, 11, 13, 15];
+            raceTo = options[(options.indexOf(raceTo) + 1) % options.length];
+            document.getElementById('race-val').innerText = `RACE TO ${raceTo}`;
+            if (peer && peer.connected) peer.send('race:' + raceTo);
+        }
 
         function initPeer(initiator, targetId) {
             peer = new SimplePeer({ initiator, trickle: true, config: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] } });
@@ -171,7 +183,7 @@
                 const urlParams = new URLSearchParams(window.location.search);
                 if (urlParams.get('mode') === 'ref') {
                     document.getElementById('player-panel').style.display = 'none';
-                    document.getElementById('referee-panel').style.display = 'grid';
+                    document.getElementById('referee-panel').style.display = 'block';
                 }
                 if (urlParams.get('join')) initPeer(true, urlParams.get('join'));
             });
@@ -189,13 +201,19 @@
         }
 
         function processCommand(cmd) {
-            if (cmd === 'start_30') { isTimeoutMode = false; startTimer(30); }
-            else if (cmd === 'start_60') { isTimeoutMode = false; startTimer(60); }
+            if (cmd.startsWith('race:')) {
+                raceTo = parseInt(cmd.split(':')[1]);
+                document.getElementById('race-val').innerText = `RACE TO ${raceTo}`;
+            }
+            else if (cmd === 'start_30_A') { highlightSide('A'); startTimer(30); }
+            else if (cmd === 'start_30_B') { highlightSide('B'); startTimer(30); }
+            else if (cmd === 'start_60') { highlightSide(null); startTimer(60); }
             else if (cmd === 'pause') isPaused = !isPaused;
-            else if (cmd === 'scoreA+') updateScore('A', 1);
-            else if (cmd === 'scoreA-') updateScore('A', -1);
-            else if (cmd === 'scoreB+') updateScore('B', 1);
-            else if (cmd === 'scoreB-') updateScore('B', -1);
+            else if (cmd.startsWith('score')) {
+                const side = cmd.includes('scoreA') ? 'A' : 'B';
+                const val = cmd.includes('+') ? 1 : -1;
+                updateScore(side, val);
+            }
             else if (cmd === 'extA') { toggleBadge('extA'); if(!isTimeoutMode) { timeLeft += 30; updateDisplay(); } }
             else if (cmd === 'extB') { toggleBadge('extB'); if(!isTimeoutMode) { timeLeft += 30; updateDisplay(); } }
             else if (cmd === 'toA') toggleTO('A');
@@ -203,15 +221,21 @@
             else if (cmd === 'resetAll') location.reload();
         }
 
+        function highlightSide(side) {
+            document.getElementById('panelA').classList.toggle('active-side', side === 'A');
+            document.getElementById('panelB').classList.toggle('active-side', side === 'B');
+        }
+
         function startTimer(sec) {
             if (timerId) clearInterval(timerId);
             timeLeft = sec; isPaused = false;
+            isTimeoutMode = (sec > 60);
             updateDisplay();
             timerId = setInterval(() => {
                 if (!isPaused && timeLeft > 0) {
                     timeLeft--;
                     if (!isTimeoutMode && timeLeft === 10) playBeep(880, 0.1);
-                    if (!isTimeoutMode && timeLeft <= 5) speak(timeLeft);
+                    if (!isTimeoutMode && timeLeft <= 5 && timeLeft > 0) speak(timeLeft);
                     updateDisplay();
                     if (timeLeft === 0) playBeep(440, 0.8);
                 }
@@ -221,27 +245,21 @@
         function toggleTO(t) {
             const el = document.getElementById('to' + t);
             const isShowing = el.classList.toggle('show-to');
-            if (isShowing) { isTimeoutMode = true; startTimer(300); } 
-            else { isTimeoutMode = false; startTimer(30); }
+            if (isShowing) { highlightSide(t); startTimer(300); } 
+            else { startTimer(30); }
         }
 
         function updateDisplay() {
-            const d = document.getElementById('timer-display');
-            const box = document.getElementById('timer-box');
-            const msg = document.getElementById('timer-msg');
-
+            const d = document.getElementById('timer-display'), box = document.getElementById('timer-box'), msg = document.getElementById('timer-msg');
             if (isTimeoutMode) {
                 box.classList.add('timeout-mode');
                 msg.innerText = "TIME OUT";
-                msg.style.color = "var(--red)";
-                let mins = Math.floor(timeLeft / 60);
-                let secs = timeLeft % 60;
+                let mins = Math.floor(timeLeft / 60), secs = timeLeft % 60;
                 d.innerText = `${mins}:${secs < 10 ? '0' + secs : secs}`;
                 d.style.color = "var(--red)";
             } else {
                 box.classList.remove('timeout-mode');
                 msg.innerText = "SHOT CLOCK";
-                msg.style.color = "#ffffff";
                 d.innerText = timeLeft < 10 ? "0" + timeLeft : timeLeft;
                 d.style.color = (timeLeft <= 5 && timeLeft > 0) ? "var(--red)" : "var(--green)";
             }
@@ -250,13 +268,22 @@
         function updateScore(t, v) { 
             scores[t] = Math.max(0, scores[t] + v); 
             document.getElementById('score' + t).innerText = scores[t]; 
-            document.getElementById('ext'+t).classList.remove('show-ext');
+            
+            // 規則調整：任一方得分，兩方 EXT 都要消除
+            document.getElementById('extA').classList.remove('show-ext');
+            document.getElementById('extB').classList.remove('show-ext');
+            
+            // T.O. 保留，不在此處清除
+            highlightSide(null);
+            if (timerId) clearInterval(timerId); // 得分時暫停計時
+            timeLeft = 0; updateDisplay();
         }
 
         function toggleBadge(id) { document.getElementById(id).classList.toggle(id.startsWith('ext') ? 'show-ext' : 'show-to'); }
         function unlockAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
         function playBeep(f, d) { if (!audioCtx) return; const o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.frequency.value = f; o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + d); }
-        function speak(n) { if (!window.speechSynthesis) return; window.speechSynthesis.cancel(); const m = new SpeechSynthesisUtterance(n.toString()); m.lang = 'en-US'; m.rate = 1.6; window.speechSynthesis.speak(m); }
+        function speak(n) { if (!window.speechSynthesis) return; window.speechSynthesis.cancel(); const m = new SpeechSynthesisUtterance(n.toString()); m.lang = 'en-US'; m.rate = 1.8; window.speechSynthesis.speak(m); }
+        
         function showQRCode() {
             const q = document.getElementById('qrcode'); q.innerHTML = "";
             const refUrl = window.location.origin + window.location.pathname + "?mode=ref&join=" + myId;
