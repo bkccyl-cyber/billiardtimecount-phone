@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>專業撞球賽事系統 - 旗艦配飾版</title>
+    <title>專業撞球賽事系統 - 旗艦版</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/simple-peer/9.11.1/simplepeer.min.js"></script>
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -35,38 +35,37 @@
             text-shadow: 0 10px 30px rgba(0,0,0,0.8);
         }
         
-        /* 恢復比例外框：保留之前的科技感設計 */
+        /* 計時器容器：預設無框無背景 */
         .floating-timer {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             width: 380px; height: 220px;
-            background: rgba(10, 14, 20, 0.9); 
-            border: 4px solid #333; /* 預設深灰框 */
+            background: transparent; border: 4px solid transparent;
             border-radius: 30px;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            z-index: 50; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            backdrop-filter: blur(10px);
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            z-index: 50; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* Time Out 模式下的發光紅框 */
+        /* 暫停模式：啟動外框、背景與發光 */
         .floating-timer.timeout-mode { 
             border-color: var(--red); 
-            background: rgba(15, 5, 5, 0.98); 
+            background: rgba(15, 5, 5, 0.95); 
             width: 440px; height: 265px; 
             box-shadow: 0 0 80px rgba(227, 45, 45, 0.4); 
+            backdrop-filter: blur(10px);
         }
 
-        /* 倒數數字比例：維持您滿意的高度壓縮感 */
+        /* 數字比例：維持您滿意的高度壓縮感 */
         #timer-display { 
             font-size: 8rem; font-weight: bold; color: var(--green); 
             display: inline-block; transform: scaleY(1.5) scaleX(1.1);
-            text-shadow: 3px 3px 0px #1a1a1a, 6px 6px 15px rgba(0,0,0,0.9);
+            text-shadow: 3px 3px 0px #1a1a1a, 6px 6px 25px rgba(0,0,0,0.9);
         }
         .timeout-mode #timer-display { color: var(--red); }
         
         .timer-msg { 
             font-size: 1.1rem; color: #ffffff; margin-top: -15px; margin-bottom: 15px; 
             letter-spacing: 5px; font-weight: bold; 
+            text-shadow: 2px 2px 5px rgba(0,0,0,0.8);
         }
 
         .indicators { display: flex; flex-direction: column; gap: 15px; position: absolute; top: 30px; z-index: 60; }
@@ -85,6 +84,7 @@
         }
         #race-val { color: var(--yellow); font-size: 1.4rem; font-weight: 900; letter-spacing: 3px; }
         
+        /* 裁判控制台 */
         #referee-panel { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 2000; padding: 15px; }
         .ref-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; height: 90%; margin-top: 10px; }
         .ref-btn { background: #1a1a1a; border: 1px solid #333; color: #fff; border-radius: 18px; font-size: 1.6rem; font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer; }
@@ -156,7 +156,6 @@
     <div id="qr-overlay" onclick="this.style.display='none'"><div id="qrcode"></div><p style="margin-top:25px;">裁判掃描連線</p></div>
 
     <script>
-        // 邏輯部分維持您滿意的設定 (T.O. 永久、0.9語音)
         let peer = null, mqttClient = null, audioCtx = null;
         const myId = 'P-' + Math.random().toString(36).substr(2, 4).toUpperCase();
         let timeLeft = 0, timerId = null, scores = {A:0, B:0}, isPaused = false, isTimeoutMode = false;
