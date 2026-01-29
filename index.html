@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>專業撞球賽事系統 - 442 版面</title>
+    <title>專業撞球賽事系統 - 旗艦配飾版</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/simple-peer/9.11.1/simplepeer.min.js"></script>
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -13,52 +13,79 @@
         * { box-sizing: border-box; margin: 0; padding: 0; touch-action: manipulation; -webkit-user-select: none; }
         body { background: var(--bg); color: #fff; font-family: 'Arial Black', sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         
-        .header { height: 40px; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; background: rgba(0,0,0,0.8); z-index: 100; border-bottom: 1px solid #222; }
+        .header { height: 40px; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; background: rgba(0,0,0,0.5); z-index: 100; }
         .setting-btn { background: #222; border: 1px solid #444; color: #888; padding: 4px 12px; border-radius: 5px; font-size: 0.75rem; }
 
         .main-stage { flex: 1; display: flex; position: relative; overflow: hidden; }
-        
-        /* 比例調整：40% - 20% - 40% */
-        .player-side { width: 40%; display: flex; align-items: center; justify-content: center; position: relative; }
-        .timer-center { width: 20%; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; border-left: 2px solid #222; border-right: 2px solid #222; }
-        
+        .player-side { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; }
         .side-a { background: linear-gradient(to right, #060b13, #0f172a); }
         .side-b { background: linear-gradient(to left, #060b13, #1e0b0b); }
         
-        /* 比分字體適配 */
-        .score-val { font-size: 45vh; font-weight: 900; line-height: 1; display: inline-block; transform: scaleY(1.3); transform-origin: center; }
+        .score-val { font-size: 50vh; font-weight: 900; line-height: 1; display: inline-block; transform: scaleY(1.3); transform-origin: center; }
         
-        /* 中央計時區樣式 */
+        .floating-timer {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 380px; height: 220px;
+            background: transparent; border: 6px solid transparent; border-radius: 30px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 50; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .floating-timer.timeout-mode { 
+            border-color: var(--red); 
+            background: rgba(15, 5, 5, 0.98); 
+            width: 440px; height: 265px; 
+            box-shadow: 0 0 80px rgba(227, 45, 45, 0.4);
+        }
+
+        /* 優化立體陰影：加入深灰色立體投影層 */
         #timer-display { 
-            font-size: 6rem; font-weight: bold; color: var(--green); 
+            font-size: 8rem; font-weight: bold; color: var(--green); 
             display: inline-block; transform: scaleY(1.5) scaleX(1.1);
             transform-origin: center;
-            text-shadow: 2px 2px 0px #333, 4px 4px 0px #1a1a1a, 6px 6px 12px rgba(0,0,0,0.9);
-            transition: all 0.3s;
+            text-shadow: 
+                2px 2px 0px #333,               /* 第一層深灰實體影 */
+                4px 4px 0px #1a1a1a,             /* 第二層更深實體影 */
+                6px 6px 12px rgba(0,0,0,0.9);    /* 第三層柔和深色擴散 */
         }
-        .timer-msg { font-size: 0.9rem; color: #ffffff; margin-bottom: 25px; letter-spacing: 3px; font-weight: bold; text-align: center; }
+        .timeout-mode #timer-display { color: var(--red); }
 
-        /* Time Out 模式下的變化 */
-        .timeout-active #timer-display { color: var(--red); font-size: 6.5rem; }
-        .timeout-active .timer-msg { color: var(--red); font-size: 1.2rem; letter-spacing: 5px; }
-        .timeout-active.timer-center { outline: 4px solid var(--red); outline-offset: -4px; box-shadow: inset 0 0 50px rgba(227, 45, 45, 0.3); }
+        .timer-msg { font-size: 1.1rem; color: #ffffff; margin-top: -15px; margin-bottom: 15px; letter-spacing: 5px; font-weight: bold; transition: font-size 0.3s; }
+        .timeout-mode .timer-msg { font-size: 1.65rem; margin-bottom: 20px; letter-spacing: 8px; }
 
         .indicators { display: flex; flex-direction: column; gap: 15px; position: absolute; top: 30px; z-index: 60; }
         .ind-left { left: 25px; } .ind-right { right: 25px; }
-        .ind-icon { width: 75px; height: 40px; border-radius: 6px; display: none; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: bold; border: 2px solid transparent; }
+        .ind-icon { width: 85px; height: 48px; border-radius: 8px; display: none; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: bold; border: 3px solid transparent; }
         .show-ext, .show-to { display: flex !important; }
 
         .action-bar { height: 14vh; display: flex; border-top: 1px solid #222; position: relative; }
         .btn-plus { flex: 1; border: none; font-size: 5rem; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .btn-minus { position: absolute; bottom: 15px; width: 60px; height: 60px; border-radius: 50%; border: 1.5px solid #555; background: rgba(0,0,0,0.7); color: #fff; font-size: 1.8rem; z-index: 10; }
+        .btn-minus { position: absolute; bottom: 15px; width: 65px; height: 65px; border-radius: 50%; border: 1.5px solid #555; background: rgba(0,0,0,0.7); color: #fff; font-size: 2rem; z-index: 10; }
 
+        /* Race To 懸浮框：深色背景與淺黃色字體 */
         .race-to-box {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: #111; border: 1.5px solid rgba(255, 235, 59, 0.5);
-            padding: 8px 30px; border-radius: 12px; z-index: 20;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.9); pointer-events: none;
+            position: absolute;
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: #111; /* 深色背景 */
+            border: 1.5px solid rgba(255, 235, 59, 0.5); /* 淺黃色邊框 */
+            padding: 10px 35px;
+            border-radius: 12px;
+            z-index: 20;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.9);
+            pointer-events: none;
         }
-        #race-val { color: var(--yellow); font-size: 1.5rem; font-weight: 900; letter-spacing: 4px; white-space: nowrap; }
+        #race-val {
+            color: var(--yellow); /* 淺黃色字體 */
+            font-size: 1.6rem;
+            font-weight: 900;
+            letter-spacing: 4px;
+            white-space: nowrap;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        #referee-panel { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 2000; padding: 15px; grid-template-rows: auto 1fr; }
+        .ref-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; height: 92%; }
+        .ref-btn { background: #1a1a1a; border: 1px solid #333; color: #fff; border-radius: 18px; font-size: 1.6rem; font-weight: bold; display: flex; align-items: center; justify-content: center; }
+        #qr-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.98); z-index: 3000; flex-direction: column; align-items: center; justify-content: center; }
     </style>
 </head>
 <body onclick="unlockAudio()">
@@ -78,7 +105,7 @@
                 <div class="score-val" id="scoreA">0</div>
             </div>
 
-            <div id="timer-box" class="timer-center">
+            <div id="timer-box" class="floating-timer">
                 <div id="timer-msg" class="timer-msg">SHOT CLOCK</div>
                 <div id="timer-display">00</div>
             </div>
@@ -93,7 +120,9 @@
         </div>
 
         <div class="action-bar">
-            <div class="race-to-box"><div id="race-val">RACE TO 5</div></div>
+            <div class="race-to-box">
+                <div id="race-val">RACE TO 5</div>
+            </div>
             <div style="flex:1; position:relative; display:flex;">
                 <button class="btn-minus" style="left:15px;" onclick="handleInput('scoreA-')">-</button>
                 <button class="btn-plus" style="background:var(--blue)" onclick="handleInput('scoreA+')">+</button>
@@ -105,25 +134,24 @@
         </div>
     </div>
 
-    <div id="referee-panel" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:2000; padding:15px;">
-        <div style="text-align:center; padding:15px; font-size:1.2rem; color:var(--green);">REFEREE CONTROL</div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; height:90%;">
-            <button class="ref-btn" style="grid-column: span 2; background:#0e3a0e; border:2px solid var(--green); font-size:2rem; color:#fff; border-radius:15px;" onclick="handleInput('start_30')">START (30s)</button>
-            <button class="ref-btn" style="background:#1a1a1a; color:#fff; border-radius:15px; border:1px solid #333;" onclick="handleInput('start_60')">OPEN (60s)</button>
-            <button class="ref-btn" style="background:#1a1a1a; color:var(--yellow); border-radius:15px; border:1px solid #333;" onclick="handleInput('pause')">PAUSE</button>
-            <button class="ref-btn" style="background:#1a1a1a; color:#fff; border-radius:15px; border:1px solid #333;" onclick="handleInput('extA')">A 延長</button>
-            <button class="ref-btn" style="background:#1a1a1a; color:#fff; border-radius:15px; border:1px solid #333;" onclick="handleInput('extB')">B 延長</button>
-            <button class="ref-btn" style="background:#1a1a1a; color:var(--purple); border-radius:15px; border:1px solid #333;" onclick="handleInput('toA')">T.O. A</button>
-            <button class="ref-btn" style="background:#1a1a1a; color:var(--purple); border-radius:15px; border:1px solid #333;" onclick="handleInput('toB')">T.O. B</button>
-            <button class="ref-btn" style="grid-column: span 2; font-size:1rem; color:#555; background:none; border:none;" onclick="if(confirm('重設？')) handleInput('resetAll')">RESET MATCH</button>
+    <div id="referee-panel">
+        <div style="text-align: center; padding: 15px; font-size: 1.2rem; color: var(--green);">REFEREE CONTROL</div>
+        <div class="ref-grid">
+            <button class="ref-btn" style="grid-column: span 2; background: #0e3a0e; border: 2px solid var(--green); font-size: 2.2rem;" onclick="handleInput('start_30')">START (30s)</button>
+            <button class="ref-btn" onclick="handleInput('start_60')">OPEN (60s)</button>
+            <button class="ref-btn" onclick="handleInput('pause')" style="color:var(--yellow)">PAUSE</button>
+            <button class="ref-btn" onclick="handleInput('extA')">A 延長</button>
+            <button class="ref-btn" onclick="handleInput('extB')">B 延長</button>
+            <button class="ref-btn" onclick="handleInput('toA')" style="border-color:var(--purple)">T.O. A</button>
+            <button class="ref-btn" onclick="handleInput('toB')" style="border-color:var(--purple)">T.O. B</button>
+            <button class="ref-btn" style="grid-column: span 2; font-size: 1rem; color: #555; border:none;" onclick="if(confirm('重設？')) handleInput('resetAll')">RESET MATCH</button>
         </div>
     </div>
 
-    <div id="qr-overlay" onclick="this.style.display='none'" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:3000; flex-direction:column; align-items:center; justify-content:center;">
-        <div id="qrcode"></div><p style="margin-top:25px;">裁判掃描連線</p>
-    </div>
+    <div id="qr-overlay" onclick="this.style.display='none'"><div id="qrcode"></div><p style="margin-top:25px;">裁判掃描連線</p></div>
 
     <script>
+        // JS 邏輯保持不變
         let peer = null, mqttClient = null, audioCtx = null;
         const myId = 'P-' + Math.random().toString(36).substr(2, 4).toUpperCase();
         let timeLeft = 0, timerId = null, scores = {A:0, B:0}, isPaused = false, isTimeoutMode = false;
@@ -143,7 +171,7 @@
                 const urlParams = new URLSearchParams(window.location.search);
                 if (urlParams.get('mode') === 'ref') {
                     document.getElementById('player-panel').style.display = 'none';
-                    document.getElementById('referee-panel').style.display = 'block';
+                    document.getElementById('referee-panel').style.display = 'grid';
                 }
                 if (urlParams.get('join')) initPeer(true, urlParams.get('join'));
             });
@@ -203,14 +231,17 @@
             const msg = document.getElementById('timer-msg');
 
             if (isTimeoutMode) {
-                box.classList.add('timeout-active');
+                box.classList.add('timeout-mode');
                 msg.innerText = "TIME OUT";
+                msg.style.color = "var(--red)";
                 let mins = Math.floor(timeLeft / 60);
                 let secs = timeLeft % 60;
                 d.innerText = `${mins}:${secs < 10 ? '0' + secs : secs}`;
+                d.style.color = "var(--red)";
             } else {
-                box.classList.remove('timeout-active');
+                box.classList.remove('timeout-mode');
                 msg.innerText = "SHOT CLOCK";
+                msg.style.color = "#ffffff";
                 d.innerText = timeLeft < 10 ? "0" + timeLeft : timeLeft;
                 d.style.color = (timeLeft <= 5 && timeLeft > 0) ? "var(--red)" : "var(--green)";
             }
