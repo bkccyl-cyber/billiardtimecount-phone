@@ -185,7 +185,7 @@
             else if (cmd === 'extB') { document.getElementById('extB').classList.add('show-ext'); if(!isTimeoutMode) timeLeft += settings.shot; updateDisplay(); }
             else if (cmd === 'toA') toggleTO('A');
             else if (cmd === 'toB') toggleTO('B');
-            else if (cmd === 'resetAll') location.reload();
+            else if (cmd === 'resetAll') resetMatchState();
         }
 
         function toggleTO(side) {
@@ -251,6 +251,33 @@
     timeLeft = 0; updateDisplay();
 }
 
+function resetMatchState() {
+    // 重設分數
+    scores = {A: 0, B: 0};
+    document.getElementById('scoreA').innerText = "0";
+    document.getElementById('scoreB').innerText = "0";
+    document.getElementById('scoreA').classList.remove('at-hill');
+    document.getElementById('scoreB').classList.remove('at-hill');
+    
+    // 重設計時器
+    if (timerId) clearInterval(timerId);
+    timeLeft = 0;
+    isPaused = false;
+    isTimeoutMode = false;
+    
+    // 隱藏所有燈號
+    document.getElementById('extA').classList.remove('show-ext');
+    document.getElementById('extB').classList.remove('show-ext');
+    document.getElementById('toA').classList.remove('show-to');
+    document.getElementById('toB').classList.remove('show-to');
+    
+    // 隱藏獲勝遮罩
+    document.getElementById('winner-overlay').style.display = 'none';
+    
+    updateDisplay();
+    console.log("比賽已重設，連線保持中。");
+}
+        
 function showWinner(player) {
     const overlay = document.getElementById('winner-overlay');
     const nameEl = document.getElementById('winner-name');
@@ -348,6 +375,7 @@ function startTimer(sec) {
 </div>
 </body>
 </html>
+
 
 
 
