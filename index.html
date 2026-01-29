@@ -279,7 +279,7 @@
 
         function unlockAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
         function playBeep(f, d) { if (!audioCtx) return; const o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.frequency.value = f; o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + d); }
-        function speak(n) { if (!window.speechSynthesis) return; window.speechSynthesis.cancel(); const m = new SpeechSynthesisUtterance(n.toString()); m.lang = 'en-US'; m.rate = 0.9; window.speechSynthesis.speak(m); }
+        function speak(n) { if (!window.speechSynthesis) return; window.speechSynthesis.cancel(); const m = new SpeechSynthesisUtterance(n.toString()); m.lang = 'en-US'; m.rate = 0.6; window.speechSynthesis.speak(m); }
         
         function showQRCode() {
             const q = document.getElementById('qrcode'); q.innerHTML = "";
@@ -291,3 +291,4 @@
     </script>
 </body>
 </html>
+
