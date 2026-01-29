@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>專業撞球賽事系統 - 語音優化版</title>
+    <title>專業撞球賽事系統 - 連線穩定版</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/simple-peer/9.11.1/simplepeer.min.js"></script>
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -20,8 +20,9 @@
         .player-side { width: 40%; height: 100%; display: flex; align-items: center; justify-content: center; position: relative; background: #060b13; }
         .center-gap { width: 20%; }
 
-        .score-val { font-size: 45vh; font-weight: 900; line-height: 1; display: inline-block; transform: scaleY(1.3); text-shadow: 0 10px 30px rgba(0,0,0,0.8); }
-        
+        .score-val { font-size: 45vh; font-weight: 900; line-height: 1; display: inline-block; transform: scaleY(1.3); text-shadow: 0 10px 30px rgba(0,0,0,0.8); transition: color 0.5s; }
+        .at-hill { color: var(--yellow) !important; text-shadow: 0 0 50px rgba(255, 235, 59, 0.8); }
+
         .floating-timer {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             width: 380px; height: 220px; background: transparent; border: 4px solid transparent; border-radius: 30px;
@@ -30,7 +31,7 @@
         .floating-timer.timeout-mode { border-color: var(--red); background: rgba(15, 5, 5, 0.95); width: 440px; height: 265px; box-shadow: 0 0 80px rgba(227, 45, 45, 0.4); backdrop-filter: blur(10px); }
 
         #timer-display { font-size: 8rem; font-weight: bold; color: var(--green); display: inline-block; transform: scaleY(1.5) scaleX(1.1); text-shadow: 3px 3px 0px #1a1a1a, 6px 6px 25px rgba(0,0,0,0.9); }
-        .timeout-mode #timer-display { color: var(--red); }
+        .timeout-mode #timer-display { color: var(--red) !important; }
         .timer-msg { font-size: 1.1rem; color: #ffffff; margin-top: -15px; margin-bottom: 15px; letter-spacing: 5px; font-weight: bold; }
 
         .indicators { display: flex; flex-direction: column; gap: 15px; position: absolute; top: 30px; z-index: 60; }
@@ -39,8 +40,14 @@
         .show-ext, .show-to { display: flex !important; }
 
         .action-bar { height: 14vh; display: flex; border-top: 1px solid #222; position: relative; }
+        .btn-minus { position: absolute; bottom: 15px; width: 65px; height: 65px; border-radius: 50%; border: 1.5px solid #555; background: rgba(0,0,0,0.7); color: #fff; font-size: 2rem; z-index: 10; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .race-to-box { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #111; border: 1.5px solid rgba(255, 235, 59, 0.3); padding: 8px 30px; border-radius: 12px; z-index: 20; }
         #race-val { color: var(--yellow); font-size: 1.4rem; font-weight: 900; letter-spacing: 3px; }
+
+        #winner-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, #1a1a1a 0%, #000 100%); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; }
+        .winner-text { height: 33vh; display: flex; align-items: flex-end; font-size: 4rem; color: #fff; text-align: center; font-weight: 900; }
+        .winner-cup { height: 67vh; display: flex; align-items: center; font-size: 15rem; filter: drop-shadow(0 0 30px gold); animation: trophyBounce 2s infinite; }
+        @keyframes trophyBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-30px); } }
 
         #referee-panel { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 2000; padding: 10px; }
         .ref-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; height: 85%; margin-top: 5px; }
@@ -50,35 +57,15 @@
         .config-item { margin-bottom: 15px; }
         .config-item label { display: block; color: #888; margin-bottom: 5px; font-size: 0.85rem; }
         .config-item input { background: #222; border: 1px solid #444; color: #fff; width: 100%; padding: 12px; font-size: 1.2rem; border-radius: 8px; }
-
         #qr-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.98); z-index: 5000; flex-direction: column; align-items: center; justify-content: center; }
-
-
-        /* 減號按鈕樣式 */
-        .btn-minus {     position: absolute;     bottom: 15px;     width: 65px;     height: 65px;     border-radius: 50%;     border: 1.5px solid #555;     background: rgba(0,0,0,0.7);     color: #fff;     font-size: 2rem;     z-index: 10;     display: flex;    align-items: center;    justify-content: center;    cursor: pointer;}
-     /* 聽牌樣式 */
-        .at-hill { color: var(--yellow) !important; text-shadow: 0 0 50px rgba(255, 235, 59, 0.8); }
-
-/* 冠軍祝賀頁面 */
-#winner-overlay {
-    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: radial-gradient(circle, #1a1a1a 0%, #000 100%);
-    z-index: 9999; flex-direction: column; align-items: center; justify-content: center;
-    animation: fadeIn 0.8s ease-out;
-}
-.winner-text { height: 33vh; display: flex; align-items: flex-end; font-size: 5rem; color: #fff; text-shadow: 0 0 20px var(--blue); }
-.winner-cup { height: 67vh; display: flex; align-items: center; font-size: 15rem; filter: drop-shadow(0 0 30px gold); animation: trophyBounce 2s infinite; }
-
-@keyframes trophyBounce { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-20px) scale(1.1); } }
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }   
     </style>
 </head>
 <body onclick="unlockAudio()">
 
     <div id="player-panel" style="height: 100%; display: flex; flex-direction: column;">
         <div class="header">
-            <div style="font-size: 11px; color: #555;">DEVICE ID: <span id="display-my-id"></span></div>
-            <button class="setting-btn" onclick="showQRCode()">QR CODE</button>
+            <div style="font-size: 11px; color: #555;">ID: <span id="display-my-id"></span></div>
+            <button class="setting-btn" onclick="showQRCode()">裁判配對</button>
         </div>
         <div class="main-stage">
             <div class="player-side side-a">
@@ -102,18 +89,21 @@
             </div>
         </div>
         <div class="action-bar">
-    <div class="race-to-box"><div id="race-val">RACE TO 5</div></div>
-    
-    <div style="flex:1; position:relative; display:flex;">
-        <button class="btn-minus" style="left:15px;" onclick="handleInput('scoreA-')">-</button>
-        <button style="flex:1; background:var(--blue); border:none; font-size:5rem; color:#fff;" onclick="handleInput('scoreA+')">+</button>
+            <div class="race-to-box"><div id="race-val">RACE TO 5</div></div>
+            <div style="flex:1; position:relative; display:flex;">
+                <button class="btn-minus" style="left:15px;" onclick="handleInput('scoreA-')">-</button>
+                <button style="flex:1; background:var(--blue); border:none; font-size:5rem; color:#fff;" onclick="handleInput('scoreA+')">+</button>
+            </div>
+            <div style="flex:1; position:relative; display:flex;">
+                <button style="flex:1; background:var(--red); border:none; font-size:5rem; color:#fff;" onclick="handleInput('scoreB+')">+</button>
+                <button class="btn-minus" style="right:15px;" onclick="handleInput('scoreB-')">-</button>
+            </div>
+        </div>
     </div>
-    
-    <div style="flex:1; position:relative; display:flex;">
-        <button style="flex:1; background:var(--red); border:none; font-size:5rem; color:#fff;" onclick="handleInput('scoreB+')">+</button>
-        <button class="btn-minus" style="right:15px;" onclick="handleInput('scoreB-')">-</button>
-    </div>
-</div>
+
+    <div id="winner-overlay" onclick="handleInput('resetAll')">
+        <div class="winner-text" id="winner-name">PLAYER A CHAMPION</div>
+        <div class="winner-cup">🏆</div>
     </div>
 
     <div id="referee-panel">
@@ -150,26 +140,23 @@
         let settings = { shot: 30, open: 60, timeout: 5, race: 5 };
         let timeLeft = 0, timerId = null, scores = {A:0, B:0}, isPaused = false, isTimeoutMode = false, activeSide = null;
 
-        function openConfig() {
-            document.getElementById('cfg-shot').value = settings.shot;
-            document.getElementById('cfg-open').value = settings.open;
-            document.getElementById('cfg-to').value = settings.timeout;
-            document.getElementById('cfg-race').value = settings.race;
-            document.getElementById('config-panel').style.display = 'block';
-        }
-
-        function saveConfig() {
-            settings.shot = parseInt(document.getElementById('cfg-shot').value);
-            settings.open = parseInt(document.getElementById('cfg-open').value);
-            settings.timeout = parseInt(document.getElementById('cfg-to').value);
-            settings.race = parseInt(document.getElementById('cfg-race').value);
-            const cmd = `sync_cfg:${settings.shot},${settings.open},${settings.timeout},${settings.race}`;
-            if (peer && peer.connected) peer.send(cmd);
-            applySettings();
-            document.getElementById('config-panel').style.display = 'none';
-        }
-
         function applySettings() { document.getElementById('race-val').innerText = `RACE TO ${settings.race}`; }
+
+        function resetMatchState() {
+            scores = {A:0, B:0};
+            document.getElementById('scoreA').innerText = "0";
+            document.getElementById('scoreB').innerText = "0";
+            document.getElementById('scoreA').classList.remove('at-hill');
+            document.getElementById('scoreB').classList.remove('at-hill');
+            if (timerId) clearInterval(timerId);
+            timeLeft = 0; isPaused = false; isTimeoutMode = false;
+            document.getElementById('extA').classList.remove('show-ext');
+            document.getElementById('extB').classList.remove('show-ext');
+            document.getElementById('toA').classList.remove('show-to');
+            document.getElementById('toB').classList.remove('show-to');
+            document.getElementById('winner-overlay').style.display = 'none';
+            updateDisplay();
+        }
 
         function processCommand(cmd) {
             if (cmd.startsWith('sync_cfg:')) {
@@ -181,8 +168,13 @@
             else if (cmd === 'start_open') { isTimeoutMode = false; startTimer(settings.open); }
             else if (cmd === 'pause') isPaused = !isPaused;
             else if (cmd.startsWith('score')) { updateScore(cmd.includes('scoreA') ? 'A' : 'B', cmd.includes('+') ? 1 : -1); }
-            else if (cmd === 'extA') { document.getElementById('extA').classList.add('show-ext'); if(!isTimeoutMode) timeLeft += settings.shot; updateDisplay(); }
-            else if (cmd === 'extB') { document.getElementById('extB').classList.add('show-ext'); if(!isTimeoutMode) timeLeft += settings.shot; updateDisplay(); }
+            else if (cmd === 'extA' || cmd === 'extB') {
+                const side = cmd.slice(-1);
+                document.getElementById('ext'+side).classList.add('show-ext');
+                speak("Extension call", 0.85);
+                if(!isTimeoutMode) timeLeft += settings.shot;
+                updateDisplay();
+            }
             else if (cmd === 'toA') toggleTO('A');
             else if (cmd === 'toB') toggleTO('B');
             else if (cmd === 'resetAll') resetMatchState();
@@ -200,8 +192,8 @@
             timerId = setInterval(() => {
                 if (!isPaused && timeLeft > 0) {
                     timeLeft--;
-                    if (!isTimeoutMode && timeLeft === 10) playBeep(880, 0.1);
-                    if (!isTimeoutMode && timeLeft <= 5 && timeLeft > 0) speak(timeLeft);
+                    if (!isTimeoutMode && timeLeft === 10) { playBeep(880, 0.1); speak("Ten seconds", 0.75); }
+                    if (!isTimeoutMode && timeLeft <= 5 && timeLeft > 0) speak(timeLeft, 0.65);
                     updateDisplay();
                     if (timeLeft === 0) { playBeep(440, 0.8); if(isTimeoutMode) { isTimeoutMode = false; startTimer(settings.shot); } }
                 }
@@ -211,175 +203,61 @@
         function updateDisplay() {
             const d = document.getElementById('timer-display'), box = document.getElementById('timer-box'), msg = document.getElementById('timer-msg');
             if (isTimeoutMode) {
-                box.classList.add('timeout-mode');
-                msg.innerText = "TIME OUT";
+                box.classList.add('timeout-mode'); msg.innerText = "TIME OUT";
                 let mins = Math.floor(timeLeft / 60), secs = timeLeft % 60;
                 d.innerText = `${mins}:${secs < 10 ? '0' + secs : secs}`;
-                
-                // --- 核心修改：暫停倒數期間，數字固定為紅色 ---
-                d.style.color = "var(--red)"; 
-                
+                d.style.color = "var(--red)";
             } else {
-                box.classList.remove('timeout-mode');
-                msg.innerText = "SHOT CLOCK";
+                box.classList.remove('timeout-mode'); msg.innerText = "SHOT CLOCK";
                 d.innerText = timeLeft < 10 ? "0" + timeLeft : timeLeft;
-                // 一般擊球模式：5秒內紅色，其餘綠色
                 d.style.color = (timeLeft <= 5 && timeLeft > 0) ? "var(--red)" : "var(--green)";
             }
         }
 
-        function updateScore(t, v) { 
-    scores[t] = Math.max(0, scores[t] + v); 
-    const scoreEl = document.getElementById('score' + t);
-    scoreEl.innerText = scores[t]; 
-    
-    // 1. 聽牌判斷 (Hill)
-    if (scores[t] === settings.race - 1) {
-        scoreEl.classList.add('at-hill');
-    } else {
-        scoreEl.classList.remove('at-hill');
-    }
-
-    // 2. 獲勝判斷 (Champion)
-    if (scores[t] >= settings.race) {
-        showWinner(t);
-    }
-
-    document.getElementById('extA').classList.remove('show-ext');
-    document.getElementById('extB').classList.remove('show-ext');
-    if (timerId) clearInterval(timerId);
-    timeLeft = 0; updateDisplay();
-}
-
-function resetMatchState() {
-    // 重設分數
-    scores = {A: 0, B: 0};
-    document.getElementById('scoreA').innerText = "0";
-    document.getElementById('scoreB').innerText = "0";
-    document.getElementById('scoreA').classList.remove('at-hill');
-    document.getElementById('scoreB').classList.remove('at-hill');
-    
-    // 重設計時器
-    if (timerId) clearInterval(timerId);
-    timeLeft = 0;
-    isPaused = false;
-    isTimeoutMode = false;
-    
-    // 隱藏所有燈號
-    document.getElementById('extA').classList.remove('show-ext');
-    document.getElementById('extB').classList.remove('show-ext');
-    document.getElementById('toA').classList.remove('show-to');
-    document.getElementById('toB').classList.remove('show-to');
-    
-    // 隱藏獲勝遮罩
-    document.getElementById('winner-overlay').style.display = 'none';
-    
-    updateDisplay();
-    console.log("比賽已重設，連線保持中。");
-}
-        
-function showWinner(player) {
-    const overlay = document.getElementById('winner-overlay');
-    const nameEl = document.getElementById('winner-name');
-    nameEl.innerText = `PLAYER ${player} CHAMPION`;
-    nameEl.style.textShadow = player === 'A' ? '0 0 30px var(--blue)' : '0 0 30px var(--red)';
-    overlay.style.display = 'flex';
-    
-    // 語音祝賀
-    speak(`Congratulations! Player ${player} is the champion`, 0.8);
-}
-
-        function unlockAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
-        
-// --- 語音優化函數 ---
-function speak(text, customRate = 0.55) {
-    if (!window.speechSynthesis) return;
-    window.speechSynthesis.cancel(); 
-    const m = new SpeechSynthesisUtterance(text.toString());
-    m.lang = 'en-US';
-    m.rate = customRate; // 根據傳入參數調整速度
-    window.speechSynthesis.speak(m);
-}
-
-// --- 邏輯處理優化 ---
-function processCommand(cmd) {
-    if (cmd.startsWith('sync_cfg:')) {
-        const parts = cmd.split(':')[1].split(',').map(Number);
-        settings = { shot: parts[0], open: parts[1], timeout: parts[2], race: parts[3] };
-        applySettings();
-    }
-    else if (cmd === 'start_shot') { isTimeoutMode = false; startTimer(settings.shot); }
-    else if (cmd === 'start_open') { isTimeoutMode = false; startTimer(settings.open); }
-    else if (cmd === 'pause') isPaused = !isPaused;
-    else if (cmd.startsWith('score')) { updateScore(cmd.includes('scoreA') ? 'A' : 'B', cmd.includes('+') ? 1 : -1); }
-    
-    // 按下延長時播放語音
-    else if (cmd === 'extA') { 
-        document.getElementById('extA').classList.add('show-ext'); 
-        speak("Extension call", 0.90); // 0.65 速度
-        if(!isTimeoutMode) timeLeft += settings.shot; 
-        updateDisplay(); 
-    }
-    else if (cmd === 'extB') { 
-        document.getElementById('extB').classList.add('show-ext'); 
-        speak("Extension call", 0.90); // 0.65 速度
-        if(!isTimeoutMode) timeLeft += settings.shot; 
-        updateDisplay(); 
-    }
-    
-    else if (cmd === 'toA') toggleTO('A');
-    else if (cmd === 'toB') toggleTO('B');
-    else if (cmd === 'resetAll') location.reload();
-}
-
-// --- 計時器邏輯優化 ---
-function startTimer(sec) {
-    if (timerId) clearInterval(timerId);
-    timeLeft = sec; isPaused = false;
-    updateDisplay();
-    timerId = setInterval(() => {
-        if (!isPaused && timeLeft > 0) {
-            timeLeft--;
-            
-            if (!isTimeoutMode) {
-                // 10秒提示
-                if (timeLeft === 10) {
-                    playBeep(880, 0.1);
-                    speak("Ten seconds", 0.85);
-                }
-                // 最後5秒讀秒
-                if (timeLeft <= 5 && timeLeft > 0) {
-                    speak(timeLeft, 0.7);
-                }
+        function updateScore(t, v) {
+            scores[t] = Math.max(0, scores[t] + v);
+            const scoreEl = document.getElementById('score' + t);
+            scoreEl.innerText = scores[t];
+            if (scores[t] === settings.race - 1) scoreEl.classList.add('at-hill');
+            else scoreEl.classList.remove('at-hill');
+            if (scores[t] >= settings.race) {
+                document.getElementById('winner-name').innerText = `PLAYER ${t} CHAMPION`;
+                document.getElementById('winner-overlay').style.display = 'flex';
+                speak(`Congratulations! Player ${t} is the champion`, 0.8);
             }
-            
-            updateDisplay();
-            if (timeLeft === 0) { 
-                playBeep(440, 0.8); 
-                if(isTimeoutMode) { isTimeoutMode = false; startTimer(settings.shot); } 
-            }
+            document.getElementById('extA').classList.remove('show-ext');
+            document.getElementById('extB').classList.remove('show-ext');
+            if (timerId) clearInterval(timerId);
+            timeLeft = 0; updateDisplay();
         }
-    }, 1000);
-}
 
+        function saveConfig() {
+            settings.shot = parseInt(document.getElementById('cfg-shot').value);
+            settings.open = parseInt(document.getElementById('cfg-open').value);
+            settings.timeout = parseInt(document.getElementById('cfg-to').value);
+            settings.race = parseInt(document.getElementById('cfg-race').value);
+            const cmd = `sync_cfg:${settings.shot},${settings.open},${settings.timeout},${settings.race}`;
+            if (peer && peer.connected) peer.send(cmd);
+            applySettings();
+            document.getElementById('config-panel').style.display = 'none';
+        }
+
+        function openConfig() {
+            document.getElementById('cfg-shot').value = settings.shot;
+            document.getElementById('cfg-open').value = settings.open;
+            document.getElementById('cfg-to').value = settings.timeout;
+            document.getElementById('cfg-race').value = settings.race;
+            document.getElementById('config-panel').style.display = 'block';
+        }
+
+        function speak(text, customRate = 0.55) { if (!window.speechSynthesis) return; window.speechSynthesis.cancel(); const m = new SpeechSynthesisUtterance(text.toString()); m.lang = 'en-US'; m.rate = customRate; window.speechSynthesis.speak(m); }
         function playBeep(f, d) { if (!audioCtx) return; const o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.frequency.value = f; o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + d); }
+        function unlockAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
         function showQRCode() { const q = document.getElementById('qrcode'); q.innerHTML = ""; const refUrl = window.location.origin + window.location.pathname + "?mode=ref&join=" + myId; new QRCode(q, { text: refUrl, width: 220, height: 220 }); document.getElementById('qr-overlay').style.display = 'flex'; }
         function initPeer(initiator, targetId) { peer = new SimplePeer({ initiator, trickle: true, config: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] } }); peer.on('signal', data => mqttClient.publish(`pool/signal/${targetId}`, JSON.stringify({ from: myId, signal: data }))); peer.on('connect', () => { document.getElementById('qr-overlay').style.display='none'; peer.send(`sync_cfg:${settings.shot},${settings.open},${settings.timeout},${settings.race}`); }); peer.on('data', data => processCommand(data.toString())); }
         function initSignaling() { mqttClient = mqtt.connect('wss://broker.emqx.io:8084/mqtt'); mqttClient.on('connect', () => { document.getElementById('display-my-id').innerText = myId; mqttClient.subscribe(`pool/signal/${myId}`); const urlParams = new URLSearchParams(window.location.search); if (urlParams.get('mode') === 'ref') { document.getElementById('player-panel').style.display = 'none'; document.getElementById('referee-panel').style.display = 'block'; } if (urlParams.get('join')) initPeer(true, urlParams.get('join')); }); mqttClient.on('message', (topic, msg) => { const data = JSON.parse(msg.toString()); if (!peer) initPeer(false, data.from); peer.signal(data.signal); }); }
         function handleInput(cmd) { unlockAudio(); if (peer && peer.connected) peer.send(cmd); processCommand(cmd); }
         window.onload = initSignaling;
     </script>
-<div id="winner-overlay" onclick="this.style.display='none'; handleInput('resetAll')">
-    <div class="winner-text" id="winner-name">PLAYER A CHAMPION</div>
-    <div class="winner-cup">🏆</div>
-</div>
 </body>
 </html>
-
-
-
-
-
-
-
-
