@@ -207,14 +207,76 @@
 
         function unlockAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
         
-        function speak(n) { 
-            if (!window.speechSynthesis) return; 
-            window.speechSynthesis.cancel(); 
-            const m = new SpeechSynthesisUtterance(n.toString()); 
-            m.lang = 'en-US'; 
-            m.rate = 0.65; // 語音播放速度已修改為 0.55
-            window.speechSynthesis.speak(m); 
+// --- 語音優化函數 ---
+function speak(text, customRate = 0.55) {
+    if (!window.speechSynthesis) return;
+    window.speechSynthesis.cancel(); 
+    const m = new SpeechSynthesisUtterance(text.toString());
+    m.lang = 'en-US';
+    m.rate = customRate; // 根據傳入參數調整速度
+    window.speechSynthesis.speak(m);
+}
+
+// --- 邏輯處理優化 ---
+function processCommand(cmd) {
+    if (cmd.startsWith('sync_cfg:')) {
+        const parts = cmd.split(':')[1].split(',').map(Number);
+        settings = { shot: parts[0], open: parts[1], timeout: parts[2], race: parts[3] };
+        applySettings();
+    }
+    else if (cmd === 'start_shot') { isTimeoutMode = false; startTimer(settings.shot); }
+    else if (cmd === 'start_open') { isTimeoutMode = false; startTimer(settings.open); }
+    else if (cmd === 'pause') isPaused = !isPaused;
+    else if (cmd.startsWith('score')) { updateScore(cmd.includes('scoreA') ? 'A' : 'B', cmd.includes('+') ? 1 : -1); }
+    
+    // 按下延長時播放語音
+    else if (cmd === 'extA') { 
+        document.getElementById('extA').classList.add('show-ext'); 
+        speak("Extension call", 0.65); // 0.65 速度
+        if(!isTimeoutMode) timeLeft += settings.shot; 
+        updateDisplay(); 
+    }
+    else if (cmd === 'extB') { 
+        document.getElementById('extB').classList.add('show-ext'); 
+        speak("Extension call", 0.65); // 0.65 速度
+        if(!isTimeoutMode) timeLeft += settings.shot; 
+        updateDisplay(); 
+    }
+    
+    else if (cmd === 'toA') toggleTO('A');
+    else if (cmd === 'toB') toggleTO('B');
+    else if (cmd === 'resetAll') location.reload();
+}
+
+// --- 計時器邏輯優化 ---
+function startTimer(sec) {
+    if (timerId) clearInterval(timerId);
+    timeLeft = sec; isPaused = false;
+    updateDisplay();
+    timerId = setInterval(() => {
+        if (!isPaused && timeLeft > 0) {
+            timeLeft--;
+            
+            if (!isTimeoutMode) {
+                // 10秒提示
+                if (timeLeft === 10) {
+                    playBeep(880, 0.1);
+                    speak("Ten seconds", 0.65);
+                }
+                // 最後5秒讀秒
+                if (timeLeft <= 5 && timeLeft > 0) {
+                    speak(timeLeft, 0.55);
+                }
+            }
+            
+            updateDisplay();
+            if (timeLeft === 0) { 
+                playBeep(440, 0.8); 
+                if(isTimeoutMode) { isTimeoutMode = false; startTimer(settings.shot); } 
+            }
         }
+    }, 1000);
+}
 
         function playBeep(f, d) { if (!audioCtx) return; const o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.frequency.value = f; o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + d); }
         function showQRCode() { const q = document.getElementById('qrcode'); q.innerHTML = ""; const refUrl = window.location.origin + window.location.pathname + "?mode=ref&join=" + myId; new QRCode(q, { text: refUrl, width: 220, height: 220 }); document.getElementById('qr-overlay').style.display = 'flex'; }
@@ -223,6 +285,7 @@
         function handleInput(cmd) { unlockAudio(); if (peer && peer.connected) peer.send(cmd); processCommand(cmd); }
         window.onload = initSignaling;
     </script>
-</body>
+   </body>
 </html>
+
 
