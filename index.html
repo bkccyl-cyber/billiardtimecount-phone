@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>專業撞球賽事系統 - 暫停字體強化版</title>
+    <title>專業撞球賽事系統 - 旗艦視覺版</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/simple-peer/9.11.1/simplepeer.min.js"></script>
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -13,6 +13,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; touch-action: manipulation; -webkit-user-select: none; }
         body { background: var(--bg); color: #fff; font-family: 'Arial Black', sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         
+        /* 頂部僅保留 ID 與設定 */
         .header { height: 40px; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; background: rgba(0,0,0,0.5); z-index: 100; }
         .setting-btn { background: #222; border: 1px solid #444; color: #888; padding: 4px 12px; border-radius: 5px; font-size: 0.75rem; }
 
@@ -21,7 +22,7 @@
         .side-a { background: linear-gradient(to right, #060b13, #0f172a); }
         .side-b { background: linear-gradient(to left, #060b13, #1e0b0b); }
         
-        /* 比分拉長 30% */
+        /* 比分拉長 */
         .score-val { font-size: 50vh; font-weight: 900; line-height: 1; display: inline-block; transform: scaleY(1.3); transform-origin: center; }
         
         /* 計時容器 */
@@ -32,48 +33,56 @@
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             z-index: 50; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        /* TIME OUT 模式：高度與寬度優化 */
         .floating-timer.timeout-mode { 
             border-color: var(--red); 
             background: rgba(15, 5, 5, 0.98); 
-            width: 440px; 
-            height: 265px; 
+            width: 440px; height: 265px; 
             box-shadow: 0 0 80px rgba(227, 45, 45, 0.4);
         }
 
-        /* 數字拉長 50% */
+        /* 倒數數字：增加立體陰影感 */
         #timer-display { 
             font-size: 8rem; font-weight: bold; color: var(--green); 
             display: inline-block; transform: scaleY(1.5) scaleX(1.1);
             transform-origin: center;
+            /* 多層次陰影營造立體感 */
+            text-shadow: 4px 4px 0px rgba(0,0,0,0.8), 8px 8px 15px rgba(0,0,0,0.5);
         }
+        .timeout-mode #timer-display { color: var(--red); }
 
-        /* 標籤字體優化 */
-        .timer-msg { 
-            font-size: 1.1rem; /* 預設 SHOT CLOCK 大小 */
-            color: #ffffff; 
-            margin-top: -15px; 
-            margin-bottom: 15px; 
-            letter-spacing: 5px; 
-            font-weight: bold; 
-            transition: font-size 0.3s;
-        }
-
-        /* 當進入 Time Out 時，字體再加大 50% */
-        .timeout-mode .timer-msg {
-            font-size: 1.65rem; 
-            margin-bottom: 20px;
-            letter-spacing: 8px;
-        }
+        .timer-msg { font-size: 1.1rem; color: #ffffff; margin-top: -15px; margin-bottom: 15px; letter-spacing: 5px; font-weight: bold; transition: font-size 0.3s; }
+        .timeout-mode .timer-msg { font-size: 1.65rem; margin-bottom: 20px; letter-spacing: 8px; }
 
         .indicators { display: flex; flex-direction: column; gap: 15px; position: absolute; top: 30px; z-index: 60; }
         .ind-left { left: 25px; } .ind-right { right: 25px; }
         .ind-icon { width: 85px; height: 48px; border-radius: 8px; display: none; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: bold; border: 3px solid transparent; }
         .show-ext, .show-to { display: flex !important; }
 
-        .action-bar { height: 14vh; display: flex; border-top: 1px solid #222; }
+        /* 底部操作欄 */
+        .action-bar { height: 14vh; display: flex; border-top: 1px solid #222; position: relative; }
         .btn-plus { flex: 1; border: none; font-size: 5rem; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .btn-minus { position: absolute; bottom: 15px; width: 65px; height: 65px; border-radius: 50%; border: 1.5px solid #555; background: rgba(0,0,0,0.7); color: #fff; font-size: 2rem; z-index: 10; }
+
+        /* Race To 懸浮框：位於兩加號中間 */
+        .race-to-box {
+            position: absolute;
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 8px 25px;
+            border-radius: 12px;
+            z-index: 20;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            pointer-events: none; /* 防止擋住點擊 */
+        }
+        #race-val {
+            color: var(--blue);
+            font-size: 1.6rem; /* 比原本大 30% */
+            font-weight: 900;
+            letter-spacing: 3px;
+            white-space: nowrap;
+        }
         
         #referee-panel { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 2000; padding: 15px; grid-template-rows: auto 1fr; }
         .ref-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; height: 92%; }
@@ -86,7 +95,6 @@
     <div id="player-panel" style="height: 100%; display: flex; flex-direction: column;">
         <div class="header">
             <div style="font-size: 11px; color: #555;">ID: <span id="display-my-id"></span></div>
-            <div style="color: var(--blue); font-weight: bold; letter-spacing: 2px;">RACE TO 5</div>
             <button class="setting-btn" onclick="showQRCode()">SETTINGS</button>
         </div>
 
@@ -114,6 +122,10 @@
         </div>
 
         <div class="action-bar">
+            <div class="race-to-box">
+                <div id="race-val">RACE TO 5</div>
+            </div>
+
             <div style="flex:1; position:relative; display:flex;">
                 <button class="btn-minus" style="left:15px;" onclick="handleInput('scoreA-')">-</button>
                 <button class="btn-plus" style="background:var(--blue)" onclick="handleInput('scoreA+')">+</button>
@@ -227,7 +239,6 @@
                 let mins = Math.floor(timeLeft / 60);
                 let secs = timeLeft % 60;
                 d.innerText = `${mins}:${secs < 10 ? '0' + secs : secs}`;
-                d.style.color = "var(--red)";
             } else {
                 box.classList.remove('timeout-mode');
                 msg.innerText = "SHOT CLOCK";
