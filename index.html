@@ -18,7 +18,6 @@
 
         .main-stage { flex: 1; display: flex; position: relative; overflow: hidden; }
         
-        /* 側邊版面：寬度 40% */
         .player-side { 
             width: 40%; height: 100%;
             display: flex; align-items: center; justify-content: center; 
@@ -28,7 +27,7 @@
         .side-b { background: linear-gradient(to left, #060b13, #1e0b0b); margin-left: auto; }
         .center-gap { width: 20%; }
 
-        .active-side { filter: brightness(1.3); box-shadow: inset 0 0 50px rgba(255,255,255,0.05); }
+        .active-side { filter: brightness(1.3); }
         
         .score-val { 
             font-size: 45vh; font-weight: 900; line-height: 1; 
@@ -36,23 +35,39 @@
             text-shadow: 0 10px 30px rgba(0,0,0,0.8);
         }
         
+        /* 恢復比例外框：保留之前的科技感設計 */
         .floating-timer {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             width: 380px; height: 220px;
-            background: rgba(10, 14, 20, 0.9); border: 4px solid #333; border-radius: 30px;
+            background: rgba(10, 14, 20, 0.9); 
+            border: 4px solid #333; /* 預設深灰框 */
+            border-radius: 30px;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             z-index: 50; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             backdrop-filter: blur(10px);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
         }
-        .floating-timer.timeout-mode { border-color: var(--red); background: rgba(15, 5, 5, 0.98); width: 440px; height: 265px; box-shadow: 0 0 80px rgba(227, 45, 45, 0.4); }
 
+        /* Time Out 模式下的發光紅框 */
+        .floating-timer.timeout-mode { 
+            border-color: var(--red); 
+            background: rgba(15, 5, 5, 0.98); 
+            width: 440px; height: 265px; 
+            box-shadow: 0 0 80px rgba(227, 45, 45, 0.4); 
+        }
+
+        /* 倒數數字比例：維持您滿意的高度壓縮感 */
         #timer-display { 
             font-size: 8rem; font-weight: bold; color: var(--green); 
             display: inline-block; transform: scaleY(1.5) scaleX(1.1);
             text-shadow: 3px 3px 0px #1a1a1a, 6px 6px 15px rgba(0,0,0,0.9);
         }
         .timeout-mode #timer-display { color: var(--red); }
-        .timer-msg { font-size: 1.1rem; color: #ffffff; margin-top: -15px; margin-bottom: 15px; letter-spacing: 5px; font-weight: bold; }
+        
+        .timer-msg { 
+            font-size: 1.1rem; color: #ffffff; margin-top: -15px; margin-bottom: 15px; 
+            letter-spacing: 5px; font-weight: bold; 
+        }
 
         .indicators { display: flex; flex-direction: column; gap: 15px; position: absolute; top: 30px; z-index: 60; }
         .ind-left { left: 25px; } .ind-right { right: 25px; }
@@ -93,10 +108,12 @@
                 <div class="score-val" id="scoreA">0</div>
             </div>
             <div class="center-gap"></div>
+            
             <div id="timer-box" class="floating-timer">
                 <div id="timer-msg" class="timer-msg">SHOT CLOCK</div>
                 <div id="timer-display">00</div>
             </div>
+
             <div class="player-side side-b" id="panelB">
                 <div class="indicators ind-right">
                     <div id="extB" class="ind-icon" style="border-color:#ffcc00; color:#ffcc00;">EXT</div>
@@ -139,6 +156,7 @@
     <div id="qr-overlay" onclick="this.style.display='none'"><div id="qrcode"></div><p style="margin-top:25px;">裁判掃描連線</p></div>
 
     <script>
+        // 邏輯部分維持您滿意的設定 (T.O. 永久、0.9語音)
         let peer = null, mqttClient = null, audioCtx = null;
         const myId = 'P-' + Math.random().toString(36).substr(2, 4).toUpperCase();
         let timeLeft = 0, timerId = null, scores = {A:0, B:0}, isPaused = false, isTimeoutMode = false;
@@ -227,13 +245,13 @@
         }
 
         function triggerTO(side) {
-            document.getElementById('to' + side).classList.add('show-to'); // 永久亮燈
+            document.getElementById('to' + side).classList.add('show-to');
             highlightSide(side);
-            startTimer(300); // 暫停 5 分鐘
+            startTimer(300);
         }
 
         function updateDisplay() {
-            const d = document.getElementById('timer-display'), box = document.getElementById('timer-box'), msg = document.getElementById('timer-msg');
+            const d = document.getElementById('timer-display'), msg = document.getElementById('timer-msg'), box = document.getElementById('timer-box');
             if (isTimeoutMode) {
                 box.classList.add('timeout-mode');
                 msg.innerText = "TIME OUT";
@@ -251,10 +269,8 @@
         function updateScore(t, v) { 
             scores[t] = Math.max(0, scores[t] + v); 
             document.getElementById('score' + t).innerText = scores[t]; 
-            // 消除雙方延長
             document.getElementById('extA').classList.remove('show-ext');
             document.getElementById('extB').classList.remove('show-ext');
-            // T.O. 燈號保留，不清除
             highlightSide(null);
             if (timerId) clearInterval(timerId);
             timeLeft = 0; updateDisplay();
@@ -262,8 +278,6 @@
 
         function unlockAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
         function playBeep(f, d) { if (!audioCtx) return; const o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.frequency.value = f; o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + d); }
-        
-        // 語音播放速度調整為 0.9
         function speak(n) { if (!window.speechSynthesis) return; window.speechSynthesis.cancel(); const m = new SpeechSynthesisUtterance(n.toString()); m.lang = 'en-US'; m.rate = 0.9; window.speechSynthesis.speak(m); }
         
         function showQRCode() {
